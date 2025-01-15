@@ -1,0 +1,169 @@
+@media (max-width: 480px) {
+    body {
+      padding: 20px;
+    }
+  
+    #typingText {
+      font-size: 0.5rem;
+      margin-top: 50px;
+    }
+  
+    .social-icons {
+      top: 90%;
+      gap: 8px;
+    }
+  
+    .social-icon {
+      width: 25px;
+      height: 25px;
+    }
+  
+    canvas {
+      aspect-ratio: 16 / 9;
+    }
+}
+
+@media (max-width: 600px) {
+    body {
+      padding: 20px;
+    }
+  
+    #typingText {
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+  
+    .social-icons {
+      top: 85%;
+      gap: 10px;
+    }
+  
+    .social-icon {
+      width: 30px;
+      height: 30px;
+    }
+  
+    canvas {
+      aspect-ratio: 16 / 9;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+      padding: 20px;
+    }
+  
+    #typingText {
+      font-size: 1.4rem;
+    }
+  
+    .social-icons {
+      top: 60%;
+      gap: 12px;
+    }
+  
+    .social-icon {
+      width: 32px;
+      height: 32px;
+    }
+  
+    canvas {
+      aspect-ratio: 16 / 9;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    body {
+      padding: 30px;
+    }
+  
+    #typingText {
+      font-size: 1.5rem;
+    }
+  
+    .social-icons {
+      top: 60%;
+      gap: 15px;
+    }
+  
+    .social-icon {
+      width: 34px;
+      height: 34px;
+    }
+  
+    canvas {
+      aspect-ratio: 16 / 9;
+    }
+}
+
+@media (min-width: 1025px) and (max-width: 1199px) {
+    body {
+      padding: 30px;
+    }
+  
+    #typingText {
+      font-size: 1.5rem;
+    }
+  
+    .social-icons {
+      top: 60%;
+      gap: 15px;
+    }
+  
+    .social-icon {
+      width: 34px;
+      height: 34px;
+    }
+  
+    canvas {
+      aspect-ratio: 16 / 9;
+    }
+}
+
+@media (min-width: 1200px) and (max-width: 1599px) {
+    body {
+      padding: 30px;
+    }
+  
+    #typingText {
+      font-size: 1.5rem;
+    }
+  
+    .social-icons {
+      top: 60%;
+      gap: 15px;
+    }
+  
+    .social-icon {
+      width: 34px;
+      height: 34px;
+    }
+  
+    canvas {
+      aspect-ratio: 16 / 9;
+    }
+}
+
+@media (min-width: 1600px) {
+    body {
+      padding: 0 40px;
+    }
+  
+    #typingText {
+      font-size: 2.5rem;
+    }
+  
+    .social-icons {
+      top: 65%;
+      gap: 25px;
+    }
+  
+    .social-icon {
+      width: 50px;
+      height: 50px;
+    }
+  
+    canvas {
+      aspect-ratio: 16 / 9;
+    }
+}
