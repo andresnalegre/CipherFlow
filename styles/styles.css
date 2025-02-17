@@ -1,0 +1,133 @@
+:root {
+  --matrix-green: #0F0;
+  --white: #fff;
+  --black: #000;
+  --red: #f00;
+  --transparent-green: rgba(0, 255, 0, 0.1);
+  --transparent-green-hover: rgba(0, 255, 0, 0.2);
+  --transparent-green-active: rgba(0, 255, 0, 0.3);
+  --transparent-red: rgba(255, 0, 0, 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--black);
+  color: var(--matrix-green);
+  font-family: monospace;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
+  flex-direction: column;
+  position: relative;
+}
+
+#typingText {
+  font-size: 1.5rem;
+  overflow: hidden;
+  border-right: 2px solid var(--matrix-green);
+  width: fit-content;
+  animation: blinkCursor 0.8s step-end infinite;
+  z-index: 10;
+  text-align: center;
+  margin-bottom: 10px;
+  max-width: 90%;
+  position: relative;
+}
+
+#matrixContainer {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  overflow: hidden;
+}
+
+#matrixContainer canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.social-icons {
+  position: absolute;
+  top: 60%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  transition: opacity 1s ease-in-out;
+  opacity: 0;
+}
+
+.social-icons.visible {
+  opacity: 1;
+}
+
+.social-icons a {
+  position: relative;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+.social-icon {
+  width: 36px;
+  height: 36px;
+  transition: transform 0.3s ease;
+}
+
+.social-icon:hover {
+  transform: scale(1.1);
+}
+
+#overlayText {
+  font-size: 3rem;
+  font-weight: bold;
+  color: var(--white);
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  animation: fadeInPulse 3s ease-in-out forwards;
+  white-space: nowrap;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@keyframes blinkCursor {
+  0%, 100% { border-color: var(--matrix-green); }
+  50% { border-color: transparent; }
+}
+
+@keyframes fadeInPulse {
+  0% { 
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0;
+  }
+  50% { 
+    transform: translate(-50%, -50%) scale(1.05);
+    opacity: 1;
+  }
+  100% { 
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
