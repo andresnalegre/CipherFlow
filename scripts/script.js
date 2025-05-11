@@ -97,13 +97,13 @@
         }, 100);
     
         if (audioInitialized) {
-            matrixAudio.currentTime = 34.8;
+            // Removido matrixAudio.currentTime = 34.8;
             matrixAudio.play().catch(error => {
                 console.error("Erro ao tocar áudio:", error);
             });
         } else {
             matrixAudio.play().then(() => {
-                matrixAudio.currentTime = 34.8;
+                // Removido matrixAudio.currentTime = 34.8;
                 audioInitialized = true;
             }).catch(error => {
                 console.error("Erro ao tocar áudio:", error);
