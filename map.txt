@@ -1,0 +1,24 @@
+Directory: CipherFlow
+Date: 11/05/2025 14:44:22
+Root folder: /Users/andresnicolasalegre/Desktop/cipherreview/CipherFlow
+--------------------------------------------------
+
+📁 CipherFlow
+    └── 📁 assets
+        ├── 📁 audio
+            └── 📄 Matrix Soundtrack.mp3
+        ├── 📄 codepen-icon.png
+        ├── 📄 favicon.png
+        ├── 📄 github-icon.png
+        ├── 📄 linkedin-icon.png
+    └── 📁 scripts
+        ├── 📄 glitch.js
+        ├── 📄 script.js
+    └── 📁 styles
+        ├── 📄 responsive.css
+        └── 📄 styles.css
+    ├── 📄 LICENSE
+    ├── 📄 README.md
+    └── 📄 index.html
+
+--------------------------------------------------

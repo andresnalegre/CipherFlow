@@ -79,6 +79,7 @@
 
     .social-icons {
         top: 55%;
+        gap: 7px;
     }
 }
 
