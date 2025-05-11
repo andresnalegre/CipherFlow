@@ -7,6 +7,9 @@
   --transparent-green-hover: rgba(0, 255, 0, 0.2);
   --transparent-green-active: rgba(0, 255, 0, 0.3);
   --transparent-red: rgba(255, 0, 0, 0.1);
+  --github-bg: #ffffff;
+  --linkedin-bg: #0077B7;
+  --codepen-bg: #FFD700;
 }
 
 * {
@@ -82,16 +85,37 @@ body {
   position: relative;
   z-index: 1000;
   cursor: pointer;
+  display: inline-block;
+  margin: 0 10px;
+  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.social-icons a:hover {
+  box-shadow: 0 0 15px var(--matrix-green);
+  transform: scale(1.1);
+}
+
+.github-bg {
+  background-color: var(--github-bg);
+}
+
+.linkedin-bg {
+  background-color: var(--linkedin-bg);
+}
+
+.codepen-bg {
+  background-color: var(--codepen-bg);
 }
 
 .social-icon {
-  width: 36px;
-  height: 36px;
-  transition: transform 0.3s ease;
-}
-
-.social-icon:hover {
-  transform: scale(1.1);
+  width: 24px;
+  height: 24px;
 }
 
 #overlayText {
