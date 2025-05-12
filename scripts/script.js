@@ -2,24 +2,73 @@
     const messages = ["Wake up, Neo...", "The Matrix has you..."];
     const typingText = document.getElementById("typingText");
     const matrixAudio = document.getElementById("matrixAudio");
+    // Add typewriter audio element
+    const typewriterAudio = new Audio('./assets/audio/TypeWriter.mp3');
+    typewriterAudio.volume = 0.4; // Adjust volume as needed
+    
     let charIndex = 0;
     let audioInitialized = false;
 
     matrixAudio.volume = 0.3;
 
+    // Create and add black overlay to start
+    const blackOverlay = document.createElement('div');
+    blackOverlay.id = 'blackOverlay';
+    blackOverlay.style.position = 'fixed';
+    blackOverlay.style.top = '0';
+    blackOverlay.style.left = '0';
+    blackOverlay.style.width = '100%';
+    blackOverlay.style.height = '100%';
+    blackOverlay.style.backgroundColor = '#000';
+    blackOverlay.style.zIndex = '1000';
+    blackOverlay.style.cursor = 'pointer';
+    document.body.appendChild(blackOverlay);
+
+    // Hide typingText initially
+    typingText.style.opacity = '0';
+
     function initializeAudio() {
         if (!audioInitialized) {
-            matrixAudio.play().then(() => {
-                matrixAudio.pause();
+            // Initialize both audio elements
+            Promise.all([
+                matrixAudio.play().then(() => matrixAudio.pause()),
+                typewriterAudio.play().then(() => typewriterAudio.pause())
+            ]).then(() => {
                 audioInitialized = true;
             }).catch(error => {
-                console.log("Erro ao inicializar áudio:", error);
+                console.log("Error initializing audio:", error);
             });
         }
     }
 
-    document.addEventListener('click', initializeAudio, { once: true });
-    document.addEventListener('touchstart', initializeAudio, { once: true });
+    function handleInitialClick() {
+        // Initialize audio first
+        initializeAudio();
+        
+        // Remove black overlay
+        blackOverlay.style.transition = 'opacity 1s';
+        blackOverlay.style.opacity = '0';
+        
+        setTimeout(() => {
+            // Remove overlay completely after fade
+            document.body.removeChild(blackOverlay);
+            
+            // Show typingText
+            typingText.style.transition = 'opacity 0.5s';
+            typingText.style.opacity = '1';
+            
+            // Start sequence
+            startSequence();
+        }, 1000);
+
+        // Remove event listeners
+        blackOverlay.removeEventListener('click', handleInitialClick);
+        blackOverlay.removeEventListener('touchstart', handleInitialClick);
+    }
+
+    // Add event listeners for initial click
+    blackOverlay.addEventListener('click', handleInitialClick);
+    blackOverlay.addEventListener('touchstart', handleInitialClick);
 
     function startSequence() {
         typeMessage(messages[0], () => {
@@ -48,6 +97,15 @@
         charIndex = 0;
         function type() {
             if (charIndex < message.length) {
+                // Play typewriter sound for each character
+                if (audioInitialized) {
+                    // Clone and play the audio to allow overlapping sounds
+                    typewriterAudio.currentTime = 0;
+                    typewriterAudio.play().catch(error => {
+                        console.error("Error playing typewriter sound:", error);
+                    });
+                }
+                
                 typingText.textContent = message.slice(0, charIndex + 1);
                 charIndex++;
                 const randomDelay = Math.floor(Math.random() * 150) + 50;
@@ -62,6 +120,7 @@
     function deleteMessage(callback) {
         function deleteChar() {
             if (charIndex > 0) {
+                // Optional: Add delete sound effect here if desired
                 typingText.textContent = typingText.textContent.slice(0, charIndex - 1);
                 charIndex--;
                 const randomDelay = Math.floor(Math.random() * 50) + 30;
@@ -83,6 +142,7 @@
     function startMatrixExperience() {
         const matrixContainer = document.getElementById("matrixContainer");
         const overlayText = document.getElementById("overlayText");
+        const developerCredit = document.getElementById("developerCredit");
     
         typingText.classList.add("hidden");
         matrixContainer.classList.remove("hidden");
@@ -97,19 +157,28 @@
         }, 100);
     
         if (audioInitialized) {
-            // Removido matrixAudio.currentTime = 34.8;
             matrixAudio.play().catch(error => {
-                console.error("Erro ao tocar áudio:", error);
+                console.error("Error playing audio:", error);
             });
         } else {
             matrixAudio.play().then(() => {
-                // Removido matrixAudio.currentTime = 34.8;
                 audioInitialized = true;
             }).catch(error => {
-                console.error("Erro ao tocar áudio:", error);
+                console.error("Error playing audio:", error);
             });
         }
     
+        // First show developer credit
+        setTimeout(() => {
+            developerCredit.classList.remove("hidden");
+            developerCredit.style.opacity = "0";
+            developerCredit.style.zIndex = "1000";
+            requestAnimationFrame(() => {
+                developerCredit.style.opacity = "1";
+            });
+        }, 1500);
+        
+        // Then show social links with a delay
         setTimeout(() => {
             const socialLinks = document.getElementById("socialLinks");
             socialLinks.classList.remove("hidden");
@@ -219,5 +288,6 @@
         }
     });
   
-    window.addEventListener("load", startSequence);
+    // Remove the automatic start on load - now we wait for user click
+    // window.addEventListener("load", startSequence);
 })();

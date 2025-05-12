@@ -10,6 +10,7 @@
   --github-bg: #ffffff;
   --linkedin-bg: #0077B7;
   --codepen-bg: #FFD700;
+  --dev-credit-color: #64d8cb; /* Vibrant cyan-turquoise color */
 }
 
 * {
@@ -64,6 +65,56 @@ body {
   height: 100%;
 }
 
+/* Enhanced developer credit styles */
+#developerCredit {
+  position: absolute;
+  top: 55%; /* Position it above the social icons */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  color: var(--dev-credit-color);
+  font-size: 1.1rem;
+  text-align: center;
+  font-family: 'Arial', sans-serif;
+  opacity: 0;
+  transition: opacity 1s ease-in-out, transform 0.5s ease-out;
+  text-shadow: 0 0 10px rgba(100, 216, 203, 0.6), 0 0 20px rgba(100, 216, 203, 0.3);
+  letter-spacing: 1px;
+}
+
+#developerCredit.visible {
+  opacity: 1;
+}
+
+.developer-link {
+  color: var(--dev-credit-color);
+  text-decoration: none;
+  font-weight: 500;
+  position: relative;
+  padding-bottom: 2px;
+  transition: all 0.3s ease;
+}
+
+.developer-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 1px;
+  bottom: 0;
+  left: 0;
+  background-color: var(--dev-credit-color);
+  transition: width 0.3s ease;
+  box-shadow: 0 0 8px var(--dev-credit-color);
+}
+
+.developer-link:hover {
+  text-shadow: 0 0 15px var(--dev-credit-color), 0 0 25px rgba(100, 216, 203, 0.5);
+}
+
+.developer-link:hover::after {
+  width: 100%;
+}
+
 .social-icons {
   position: absolute;
   top: 60%;
@@ -75,6 +126,7 @@ body {
   justify-content: center;
   transition: opacity 1s ease-in-out;
   opacity: 0;
+  margin-top: 15px; /* Added margin to create space below developer credit */
 }
 
 .social-icons.visible {
@@ -130,6 +182,7 @@ body {
   z-index: 20;
   animation: fadeInPulse 3s ease-in-out forwards;
   white-space: nowrap;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(0, 255, 0, 0.3);
 }
 
 .hidden {
@@ -154,4 +207,35 @@ body {
     transform: translate(-50%, -50%) scale(1);
     opacity: 1;
   }
+}
+
+@keyframes floatEffect {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
+
+/* Black overlay styles for initial screen */
+#blackOverlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: rgba(0, 255, 0, 0.3);
+  font-size: 24px;
+}
+
+/* Add subtle instruction to make it clear the page is interactive */
+#blackOverlay::after {
+  content: "Click to enter";
+  position: absolute;
+  font-family: monospace;
+  font-size: 18px;
+  opacity: 0.7;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+  100% { opacity: 0.3; }
 }
