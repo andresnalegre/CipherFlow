@@ -2,12 +2,21 @@
     const messages = ["Wake up, Neo...", "The Matrix has you..."];
     const typingText = document.getElementById("typingText");
     const matrixAudio = document.getElementById("matrixAudio");
-    // Add typewriter audio element
-    const typewriterAudio = new Audio('./assets/audio/TypeWriter.mp3');
-    typewriterAudio.volume = 0.4; // Adjust volume as needed
     
+    // Create a pool of typewriter sound effects for overlapping sounds on mobile
+    const typewriterAudioPool = [];
+    const AUDIO_POOL_SIZE = 3; // Small pool size to avoid memory issues
+    
+    for (let i = 0; i < AUDIO_POOL_SIZE; i++) {
+        const audio = new Audio('./assets/audio/TypeWriter.mp3');
+        audio.volume = 0.4;
+        typewriterAudioPool.push(audio);
+    }
+    
+    let audioIndex = 0;
     let charIndex = 0;
     let audioInitialized = false;
+    let isMobileDevice = window.innerWidth <= 768;
 
     matrixAudio.volume = 0.3;
 
@@ -29,15 +38,25 @@
 
     function initializeAudio() {
         if (!audioInitialized) {
-            // Initialize both audio elements
-            Promise.all([
-                matrixAudio.play().then(() => matrixAudio.pause()),
-                typewriterAudio.play().then(() => typewriterAudio.pause())
-            ]).then(() => {
-                audioInitialized = true;
-            }).catch(error => {
-                console.log("Error initializing audio:", error);
+            // Initialize all audio elements - include all audio in pool
+            const promises = [matrixAudio.play().then(() => matrixAudio.pause())];
+            
+            // Also initialize all typewriter audio elements
+            typewriterAudioPool.forEach(audio => {
+                promises.push(audio.play().then(() => audio.pause()));
             });
+            
+            Promise.all(promises)
+                .then(() => {
+                    audioInitialized = true;
+                })
+                .catch(error => {
+                    console.log("Error initializing audio:", error);
+                    // Add a second chance to initialize audio on next user interaction
+                    document.addEventListener('click', () => {
+                        if (!audioInitialized) initializeAudio();
+                    }, { once: true });
+                });
         }
     }
 
@@ -99,16 +118,30 @@
             if (charIndex < message.length) {
                 // Play typewriter sound for each character
                 if (audioInitialized) {
-                    // Clone and play the audio to allow overlapping sounds
-                    typewriterAudio.currentTime = 0;
-                    typewriterAudio.play().catch(error => {
-                        console.error("Error playing typewriter sound:", error);
-                    });
+                    // Use audio from pool instead of reusing the same audio element
+                    const currentAudio = typewriterAudioPool[audioIndex];
+                    currentAudio.currentTime = 0;
+                    
+                    // Play the sound and handle any errors
+                    const playPromise = currentAudio.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.error("Error playing typewriter sound:", error);
+                        });
+                    }
+                    
+                    // Rotate to next audio in pool
+                    audioIndex = (audioIndex + 1) % AUDIO_POOL_SIZE;
                 }
                 
                 typingText.textContent = message.slice(0, charIndex + 1);
                 charIndex++;
-                const randomDelay = Math.floor(Math.random() * 150) + 50;
+                
+                // Adjust typing speed based on device size for better sound sync
+                const randomDelay = isMobileDevice 
+                    ? Math.floor(Math.random() * 180) + 70  // Slower for mobile
+                    : Math.floor(Math.random() * 150) + 50; // Normal for desktop
+                    
                 setTimeout(type, randomDelay);
             } else if (callback) {
                 setTimeout(callback, 500);
@@ -120,10 +153,14 @@
     function deleteMessage(callback) {
         function deleteChar() {
             if (charIndex > 0) {
-                // Optional: Add delete sound effect here if desired
                 typingText.textContent = typingText.textContent.slice(0, charIndex - 1);
                 charIndex--;
-                const randomDelay = Math.floor(Math.random() * 50) + 30;
+                
+                // Adjust delete speed based on device
+                const randomDelay = isMobileDevice
+                    ? Math.floor(Math.random() * 70) + 40  // Slower for mobile
+                    : Math.floor(Math.random() * 50) + 30; // Normal for desktop
+                    
                 setTimeout(deleteChar, randomDelay);
             } else if (callback) {
                 callback();
@@ -243,6 +280,9 @@
             this.ctx.font = `${this.fontSize}px monospace`;
             
             this.initDrops();
+            
+            // Update mobile detection on resize
+            isMobileDevice = window.innerWidth <= 768;
         }
   
         initDrops() {
@@ -286,6 +326,13 @@
             }
             GlitchText.init(overlayText);
         }
+    });
+    
+    // Monitor orientation changes for mobile devices
+    window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+            isMobileDevice = window.innerWidth <= 768;
+        }, 200);
     });
   
     // Remove the automatic start on load - now we wait for user click
