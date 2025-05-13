@@ -1,5 +1,6 @@
 :root {
   --matrix-green: #0F0;
+  --bright-green: #00ff00;
   --white: #fff;
   --black: #000;
   --red: #f00;
@@ -215,27 +216,46 @@ body {
   100% { transform: translateY(0px); }
 }
 
-/* Black overlay styles for initial screen */
+/* Enhanced Black overlay styles for initial screen */
 #blackOverlay {
   display: flex;
   justify-content: center;
   align-items: center;
   color: rgba(0, 255, 0, 0.3);
   font-size: 24px;
+  position: relative;
 }
 
-/* Add subtle instruction to make it clear the page is interactive */
+/* Improved "Click to enter" text */
 #blackOverlay::after {
   content: "Click to enter";
   position: absolute;
-  font-family: monospace;
-  font-size: 18px;
-  opacity: 0.7;
-  animation: pulse 2s infinite;
+  font-family: 'Courier New', monospace;
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: var(--bright-green);
+  text-shadow: 0 0 10px var(--bright-green), 0 0 20px var(--bright-green), 0 0 30px var(--bright-green);
+  opacity: 0;
+  animation: enhancedPulse 2s infinite;
 }
 
-@keyframes pulse {
-  0% { opacity: 0.3; }
-  50% { opacity: 0.7; }
-  100% { opacity: 0.3; }
+@keyframes enhancedPulse {
+  0% { 
+    opacity: 0.3;
+    transform: scale(0.98);
+  }
+  50% { 
+    opacity: 1;
+    transform: scale(1.02);
+  }
+  100% { 
+    opacity: 0.3;
+    transform: scale(0.98);
+  }
+}
+
+/* Add a pointer cursor to the entire overlay to hint that it's clickable */
+#blackOverlay {
+  cursor: pointer;
 }
