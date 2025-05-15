@@ -17,6 +17,7 @@
     let charIndex = 0;
     let audioInitialized = false;
     let isMobileDevice = window.innerWidth <= 768;
+    let messageSequenceComplete = false; // Flag to track when messages are complete
 
     matrixAudio.volume = 0.3;
 
@@ -49,6 +50,7 @@
             Promise.all(promises)
                 .then(() => {
                     audioInitialized = true;
+                    console.log("Audio initialized successfully");
                 })
                 .catch(error => {
                     console.log("Error initializing audio:", error);
@@ -172,6 +174,11 @@
     function showSecondMessage() {
         typeMessage(messages[1], () => {
             typingText.classList.add("blink");
+            
+            // Mark the message sequence as complete
+            messageSequenceComplete = true;
+            
+            // Wait a moment before starting the Matrix experience
             setTimeout(startMatrixExperience, 1000);
         });
     }
@@ -193,16 +200,21 @@
             }
         }, 100);
     
-        if (audioInitialized) {
+        // Only play the Matrix soundtrack after message sequence is complete
+        // This ensures consistent behavior on all devices
+        if (audioInitialized && messageSequenceComplete) {
+            console.log("Playing Matrix soundtrack");
+            
+            // For mobile devices, ensure soundtrack starts clean
+            if (isMobileDevice) {
+                matrixAudio.currentTime = 0;
+            }
+            
             matrixAudio.play().catch(error => {
-                console.error("Error playing audio:", error);
+                console.error("Error playing Matrix soundtrack:", error);
             });
         } else {
-            matrixAudio.play().then(() => {
-                audioInitialized = true;
-            }).catch(error => {
-                console.error("Error playing audio:", error);
-            });
+            console.warn("Audio not initialized or message sequence incomplete");
         }
     
         // First show developer credit
