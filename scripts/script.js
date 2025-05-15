@@ -3,9 +3,9 @@
     const typingText = document.getElementById("typingText");
     const matrixAudio = document.getElementById("matrixAudio");
     
-    // Create a pool of typewriter sound effects for overlapping sounds on mobile
+    // Create a pool of typewriter sound effects for better control
     const typewriterAudioPool = [];
-    const AUDIO_POOL_SIZE = 3; // Small pool size to avoid memory issues
+    const AUDIO_POOL_SIZE = 3;
     
     for (let i = 0; i < AUDIO_POOL_SIZE; i++) {
         const audio = new Audio('./assets/audio/TypeWriter.mp3');
@@ -17,7 +17,8 @@
     let charIndex = 0;
     let audioInitialized = false;
     let isMobileDevice = window.innerWidth <= 768;
-    let messageSequenceComplete = false; // Flag to track when messages are complete
+    let messageSequenceComplete = false;
+    let activeTypewriterSounds = []; // Track active sounds to stop them
 
     matrixAudio.volume = 0.3;
 
@@ -39,10 +40,9 @@
 
     function initializeAudio() {
         if (!audioInitialized) {
-            // Initialize all audio elements - include all audio in pool
+            // Initialize all audio elements
             const promises = [matrixAudio.play().then(() => matrixAudio.pause())];
             
-            // Also initialize all typewriter audio elements
             typewriterAudioPool.forEach(audio => {
                 promises.push(audio.play().then(() => audio.pause()));
             });
@@ -54,7 +54,6 @@
                 })
                 .catch(error => {
                     console.log("Error initializing audio:", error);
-                    // Add a second chance to initialize audio on next user interaction
                     document.addEventListener('click', () => {
                         if (!audioInitialized) initializeAudio();
                     }, { once: true });
@@ -103,6 +102,10 @@
         document.removeEventListener("click", handleFirstClick);
         document.removeEventListener("touchstart", handleFirstClick);
         document.removeEventListener("keydown", handleFirstKeydown);
+        
+        // Stop any ongoing typewriter sounds
+        stopAllTypewriterSounds();
+        
         deleteMessage(() => {
             setTimeout(showSecondMessage, 500);
         });
@@ -113,46 +116,101 @@
             handleFirstClick();
         }
     }
+    
+    // Helper function to stop all typewriter sounds
+    function stopAllTypewriterSounds() {
+        activeTypewriterSounds.forEach(audio => {
+            try {
+                audio.pause();
+                audio.currentTime = 0;
+            } catch (e) {
+                console.error("Error stopping typewriter sound:", e);
+            }
+        });
+        activeTypewriterSounds = [];
+    }
+
+    function playTypewriterSound() {
+        if (!audioInitialized) return null;
+        
+        try {
+            // Get the next audio object from the pool
+            const audio = typewriterAudioPool[audioIndex];
+            
+            // Reset the audio to the beginning
+            audio.currentTime = 0;
+            
+            // Play the sound
+            const playPromise = audio.play();
+            
+            // Handle potential promise rejection
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.error("Error playing typewriter sound:", error);
+                    // Remove from active sounds list on error
+                    const index = activeTypewriterSounds.indexOf(audio);
+                    if (index > -1) {
+                        activeTypewriterSounds.splice(index, 1);
+                    }
+                });
+            }
+            
+            // Add to active sounds list
+            activeTypewriterSounds.push(audio);
+            
+            // Create a timeout to remove this sound from active list after its duration
+            const soundDuration = isMobileDevice ? 200 : 150; // Adjust based on your audio file
+            setTimeout(() => {
+                const index = activeTypewriterSounds.indexOf(audio);
+                if (index > -1) {
+                    activeTypewriterSounds.splice(index, 1);
+                }
+            }, soundDuration);
+            
+            // Move to the next audio object for the next character
+            audioIndex = (audioIndex + 1) % AUDIO_POOL_SIZE;
+            
+            return audio;
+        } catch (e) {
+            console.error("Error in typewriter sound:", e);
+            return null;
+        }
+    }
 
     function typeMessage(message, callback) {
         charIndex = 0;
+        
+        // Ensure any previous typewriter sounds are stopped
+        stopAllTypewriterSounds();
+        
         function type() {
             if (charIndex < message.length) {
                 // Play typewriter sound for each character
-                if (audioInitialized) {
-                    // Use audio from pool instead of reusing the same audio element
-                    const currentAudio = typewriterAudioPool[audioIndex];
-                    currentAudio.currentTime = 0;
-                    
-                    // Play the sound and handle any errors
-                    const playPromise = currentAudio.play();
-                    if (playPromise !== undefined) {
-                        playPromise.catch(error => {
-                            console.error("Error playing typewriter sound:", error);
-                        });
-                    }
-                    
-                    // Rotate to next audio in pool
-                    audioIndex = (audioIndex + 1) % AUDIO_POOL_SIZE;
-                }
+                playTypewriterSound();
                 
                 typingText.textContent = message.slice(0, charIndex + 1);
                 charIndex++;
                 
                 // Adjust typing speed based on device size for better sound sync
                 const randomDelay = isMobileDevice 
-                    ? Math.floor(Math.random() * 180) + 70  // Slower for mobile
-                    : Math.floor(Math.random() * 150) + 50; // Normal for desktop
+                    ? Math.floor(Math.random() * 180) + 70  
+                    : Math.floor(Math.random() * 150) + 50;
                     
                 setTimeout(type, randomDelay);
             } else if (callback) {
+                // When typing is complete, ensure all typewriter sounds are stopped
+                stopAllTypewriterSounds();
                 setTimeout(callback, 500);
             }
         }
+        
         type();
     }
   
     function deleteMessage(callback) {
+        // Ensure any ongoing typewriter sounds are stopped
+        stopAllTypewriterSounds();
+        
         function deleteChar() {
             if (charIndex > 0) {
                 typingText.textContent = typingText.textContent.slice(0, charIndex - 1);
@@ -160,14 +218,15 @@
                 
                 // Adjust delete speed based on device
                 const randomDelay = isMobileDevice
-                    ? Math.floor(Math.random() * 70) + 40  // Slower for mobile
-                    : Math.floor(Math.random() * 50) + 30; // Normal for desktop
+                    ? Math.floor(Math.random() * 70) + 40
+                    : Math.floor(Math.random() * 50) + 30;
                     
                 setTimeout(deleteChar, randomDelay);
             } else if (callback) {
                 callback();
             }
         }
+        
         deleteChar();
     }
   
@@ -201,7 +260,6 @@
         }, 100);
     
         // Only play the Matrix soundtrack after message sequence is complete
-        // This ensures consistent behavior on all devices
         if (audioInitialized && messageSequenceComplete) {
             console.log("Playing Matrix soundtrack");
             
@@ -213,8 +271,6 @@
             matrixAudio.play().catch(error => {
                 console.error("Error playing Matrix soundtrack:", error);
             });
-        } else {
-            console.warn("Audio not initialized or message sequence incomplete");
         }
     
         // First show developer credit
@@ -337,6 +393,13 @@
                 overlayText.removeChild(overlayText.firstChild);
             }
             GlitchText.init(overlayText);
+        }
+    });
+    
+    // Stop sounds when page is hidden or browser tab changes
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            stopAllTypewriterSounds();
         }
     });
     
