@@ -363,9 +363,13 @@ const GlitchText = {
                 matrixAudio.currentTime = 0;
             }
 
-            matrixAudio.play().catch(error => {
-                console.error("Error playing Matrix soundtrack:", error);
-            });
+            matrixAudio.play()
+                .then(() => {
+                    matrix.enableAudioReactive(matrixAudio);
+                })
+                .catch(error => {
+                    console.error("Error playing Matrix soundtrack:", error);
+                });
         }
 
         setTimeout(() => {
@@ -395,6 +399,13 @@ const GlitchText = {
             this.characters = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789@#$%^&*";
             this.columns = [];
             this.drops = [];
+
+            this.audioCtx = null;
+            this.analyser = null;
+            this.audioData = null;
+            this.audioEnabled = false;
+            this.columnEnergy = [];
+            this.globalEnergy = 0;
 
             this.container.style.overflow = 'hidden';
             this.container.style.position = 'fixed';
@@ -441,6 +452,7 @@ const GlitchText = {
             this.ctx.font = `${this.fontSize}px monospace`;
 
             this.initDrops();
+            this.columnEnergy = new Array(this.columns).fill(0);
 
             isMobileDevice = window.innerWidth <= 768;
         }
@@ -452,18 +464,73 @@ const GlitchText = {
             }
         }
 
-        animate() {
-            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        enableAudioReactive(audioElement) {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextClass || !audioElement) return;
+            if (this.audioCtx) return;
 
-            this.ctx.fillStyle = '#0F0';
+            this.audioCtx = new AudioContextClass();
+            this.analyser = this.audioCtx.createAnalyser();
+            this.analyser.fftSize = 512;
+
+            const source = this.audioCtx.createMediaElementSource(audioElement);
+            source.connect(this.analyser);
+            this.analyser.connect(this.audioCtx.destination);
+
+            this.audioData = new Uint8Array(this.analyser.frequencyBinCount);
+            this.audioEnabled = true;
+
+            if (this.audioCtx.state === 'suspended') {
+                this.audioCtx.resume().catch(() => {});
+            }
+        }
+
+        updateAudio() {
+            if (!this.audioEnabled || !this.analyser || !this.audioData) return;
+
+            this.analyser.getByteFrequencyData(this.audioData);
+
+            const len = this.audioData.length;
+            let sum = 0;
+            for (let i = 0; i < len; i++) {
+                sum += this.audioData[i];
+            }
+            this.globalEnergy = sum / (len * 255);
+
+            const cols = this.columns;
+            if (!cols) return;
+
+            this.columnEnergy = new Array(cols);
+            for (let c = 0; c < cols; c++) {
+                const bin = Math.floor((c / cols) * len);
+                this.columnEnergy[c] = this.audioData[bin] / 255;
+            }
+        }
+
+        animate() {
+            this.updateAudio();
+
+            const trailAlpha = 0.05 + (this.globalEnergy || 0) * 0.08;
+            this.ctx.fillStyle = `rgba(0, 0, 0, ${trailAlpha})`;
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
             for (let i = 0; i < this.drops.length; i++) {
                 const char = this.characters[Math.floor(Math.random() * this.characters.length)];
                 const x = (i * this.fontSize) - 1;
                 const y = this.drops[i] * this.fontSize;
 
+                const energy = this.columnEnergy[i] || 0;
+                const alpha = 0.25 + energy * 0.75;
+                this.ctx.fillStyle = `rgba(0, 255, 0, ${alpha})`;
+
                 this.ctx.fillText(char, x, y);
+
+                if (energy > 0.4) {
+                    const glowHeight = this.fontSize * (1.5 + energy * 6);
+                    this.ctx.globalAlpha = 0.18 + energy * 0.35;
+                    this.ctx.fillRect(x, y - glowHeight, this.fontSize * 0.7, glowHeight);
+                    this.ctx.globalAlpha = 1;
+                }
 
                 if (y > this.canvas.height && Math.random() > 0.975) {
                     this.drops[i] = 0;
