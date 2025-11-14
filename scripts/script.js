@@ -363,13 +363,9 @@ const GlitchText = {
                 matrixAudio.currentTime = 0;
             }
 
-            matrixAudio.play()
-                .then(() => {
-                    matrix.enableAudioReactive(matrixAudio);
-                })
-                .catch(error => {
-                    console.error("Error playing Matrix soundtrack:", error);
-                });
+            matrixAudio.play().catch(error => {
+                console.error("Error playing Matrix soundtrack:", error);
+            });
         }
 
         setTimeout(() => {
@@ -399,11 +395,6 @@ const GlitchText = {
             this.characters = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789@#$%^&*";
             this.columns = [];
             this.drops = [];
-
-            this.audioCtx = null;
-            this.analyser = null;
-            this.audioData = null;
-            this.audioEnabled = false;
 
             this.container.style.overflow = 'hidden';
             this.container.style.position = 'fixed';
@@ -461,73 +452,6 @@ const GlitchText = {
             }
         }
 
-        enableAudioReactive(audioElement) {
-            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-            if (!AudioContextClass || !audioElement) return;
-            if (this.audioCtx) return;
-
-            this.audioCtx = new AudioContextClass();
-            this.analyser = this.audioCtx.createAnalyser();
-            this.analyser.fftSize = 1024;
-
-            const source = this.audioCtx.createMediaElementSource(audioElement);
-            source.connect(this.analyser);
-            this.analyser.connect(this.audioCtx.destination);
-
-            this.audioData = new Uint8Array(this.analyser.frequencyBinCount);
-            this.audioEnabled = true;
-
-            if (this.audioCtx.state === 'suspended') {
-                this.audioCtx.resume().catch(() => {});
-            }
-        }
-
-        drawWaveform() {
-            if (!this.audioEnabled || !this.analyser || !this.audioData) return;
-
-            this.analyser.getByteTimeDomainData(this.audioData);
-
-            const ctx = this.ctx;
-            const width = this.canvas.width;
-            const height = this.canvas.height;
-            const centerY = height * 0.5;
-            const amplitude = height * 0.18;
-            const sliceWidth = width / this.audioData.length;
-
-            ctx.save();
-            ctx.lineWidth = 2;
-
-            const gradient = ctx.createLinearGradient(0, centerY - amplitude, 0, centerY + amplitude);
-            gradient.addColorStop(0, 'rgba(0, 255, 200, 0.95)');
-            gradient.addColorStop(0.5, 'rgba(0, 255, 120, 1)');
-            gradient.addColorStop(1, 'rgba(0, 255, 0, 0.8)');
-            ctx.strokeStyle = gradient;
-
-            ctx.beginPath();
-
-            let x = 0;
-            for (let i = 0; i < this.audioData.length; i++) {
-                const v = (this.audioData[i] - 128) / 128;
-                const y = centerY + v * amplitude;
-
-                if (i === 0) {
-                    ctx.moveTo(x, y);
-                } else {
-                    ctx.lineTo(x, y);
-                }
-                x += sliceWidth;
-            }
-
-            ctx.stroke();
-
-            ctx.globalAlpha = 0.4;
-            ctx.scale(1, -1);
-            ctx.translate(0, -2 * centerY);
-            ctx.stroke();
-
-            ctx.restore();
-        }
-
         animate() {
             this.ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -547,8 +471,6 @@ const GlitchText = {
 
                 this.drops[i] += 0.7;
             }
-
-            this.drawWaveform();
 
             setTimeout(() => {
                 requestAnimationFrame(() => this.animate());
