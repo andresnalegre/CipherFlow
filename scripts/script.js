@@ -363,13 +363,9 @@ const GlitchText = {
                 matrixAudio.currentTime = 0;
             }
 
-            matrixAudio.play()
-                .then(() => {
-                    initAudioReactiveMatrix(matrix, matrixAudio);
-                })
-                .catch(error => {
-                    console.error("Error playing Matrix soundtrack:", error);
-                });
+            matrixAudio.play().catch(error => {
+                console.error("Error playing Matrix soundtrack:", error);
+            });
         }
 
         setTimeout(() => {
@@ -399,7 +395,6 @@ const GlitchText = {
             this.characters = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789@#$%^&*";
             this.columns = [];
             this.drops = [];
-            this.audioLevel = 0;
 
             this.container.style.overflow = 'hidden';
             this.container.style.position = 'fixed';
@@ -457,33 +452,18 @@ const GlitchText = {
             }
         }
 
-        setAudioLevel(level) {
-            this.audioLevel = Math.max(0, Math.min(level, 1));
-        }
-
         animate() {
             this.ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-            const alpha = 0.3 + this.audioLevel * 0.7;
+            this.ctx.fillStyle = '#0F0';
 
             for (let i = 0; i < this.drops.length; i++) {
                 const char = this.characters[Math.floor(Math.random() * this.characters.length)];
                 const x = (i * this.fontSize) - 1;
                 const y = this.drops[i] * this.fontSize;
 
-                this.ctx.fillStyle = `rgba(0, 255, 0, ${alpha})`;
                 this.ctx.fillText(char, x, y);
-
-                if (this.audioLevel > 0.25 && Math.random() < this.audioLevel * 0.8) {
-                    this.ctx.fillStyle = `rgba(180, 255, 180, ${this.audioLevel})`;
-                    this.ctx.fillText(char, x, y - this.fontSize);
-                }
-
-                if (this.audioLevel > 0.6 && Math.random() < this.audioLevel * 0.4) {
-                    this.ctx.fillStyle = `rgba(0, 255, 120, ${this.audioLevel * 0.7})`;
-                    this.ctx.fillRect(x, 0, 1, this.canvas.height);
-                }
 
                 if (y > this.canvas.height && Math.random() > 0.975) {
                     this.drops[i] = 0;
@@ -495,42 +475,6 @@ const GlitchText = {
             setTimeout(() => {
                 requestAnimationFrame(() => this.animate());
             }, 33);
-        }
-    }
-
-    function initAudioReactiveMatrix(matrix, audioElement) {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContextClass || !audioElement) return;
-
-        const audioCtx = new AudioContextClass();
-        const source = audioCtx.createMediaElementSource(audioElement);
-        const analyser = audioCtx.createAnalyser();
-
-        analyser.fftSize = 256;
-        const bufferLength = analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-
-        source.connect(analyser);
-        analyser.connect(audioCtx.destination);
-
-        function updateLevel() {
-            analyser.getByteFrequencyData(dataArray);
-
-            let max = 0;
-            for (let i = 0; i < bufferLength; i++) {
-                if (dataArray[i] > max) max = dataArray[i];
-            }
-
-            const normalized = max / 255;
-            matrix.setAudioLevel(normalized);
-
-            requestAnimationFrame(updateLevel);
-        }
-
-        if (audioCtx.state === "suspended") {
-            audioCtx.resume().then(updateLevel).catch(() => {});
-        } else {
-            updateLevel();
         }
     }
 
@@ -555,4 +499,5 @@ const GlitchText = {
             isMobileDevice = window.innerWidth <= 768;
         }, 200);
     });
+
 })();
