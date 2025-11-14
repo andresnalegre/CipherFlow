@@ -5,17 +5,11 @@ const GlitchText = {
 
     calculateFontSize() {
         const width = window.innerWidth;
-        if (width < 600) {
-            return Math.max(24, Math.floor(width / 15));
-        }
-        return 48;
+        return width < 600 ? Math.max(24, Math.floor(width / 15)) : 48;
     },
 
     init(overlayTextElement) {
-        if (this.isRunning) {
-            this.stop();
-        }
-
+        if (this.isRunning) this.stop();
         this.isRunning = true;
 
         const canvas = document.createElement('canvas');
@@ -30,89 +24,47 @@ const GlitchText = {
         overlayTextElement.appendChild(canvas);
 
         const ctx = canvas.getContext('2d');
-        const textX = canvas.width / 2;
-        const textY = canvas.height / 2;
+        let textX = canvas.width / 2;
+        let textY = canvas.height / 2;
 
         const fontSize = this.calculateFontSize();
         ctx.font = `bold ${fontSize}px 'Courier New'`;
         ctx.fillStyle = "rgba(255, 255, 255, 1)";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
+        ctx.shadowColor = '#0F0';
+        ctx.shadowBlur = fontSize / 5;
 
         const staticText = "ENTER THE ";
         const targetText = "MATRIX";
 
-        const textMetricsStatic = ctx.measureText(staticText);
-        const textMetricsTarget = ctx.measureText(targetText);
-        const totalTextWidth = ctx.measureText(staticText + targetText).width;
+        const renderGlitch = () => {
+            const glitchedTarget = targetText
+                .split('')
+                .map(char => (Math.random() < 0.3 ? this.chars[Math.floor(Math.random() * this.chars.length)] : char))
+                .join('');
 
-        const boundingBox = {
-            x: textX - totalTextWidth / 2 + textMetricsStatic.width,
-            y: textY - fontSize / 2,
-            width: textMetricsTarget.width,
-            height: fontSize
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = Math.random() < 0.05 ? '#0F0' : '#FFF';
+            ctx.fillText(staticText + glitchedTarget, textX, textY);
         };
 
-        ctx.shadowColor = '#0F0';
-        ctx.shadowBlur = fontSize / 5;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
+        const loop = () => {
+            renderGlitch();
+            if (this.isRunning) this.animationFrameId = requestAnimationFrame(loop);
+        };
 
-        this.startGlitch(ctx, textX, textY, staticText, targetText, boundingBox, canvas);
+        loop();
 
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             const newFontSize = this.calculateFontSize();
             ctx.font = `bold ${newFontSize}px 'Courier New'`;
-            ctx.fillStyle = "rgba(255, 255, 255, 1)";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.shadowColor = '#0F0';
             ctx.shadowBlur = newFontSize / 5;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
+            textX = canvas.width / 2;
+            textY = canvas.height / 2;
         });
-    },
-
-    startGlitch(ctx, textX, textY, staticText, targetText, boundingBox, canvas) {
-        let lastTime = 0;
-        const glitchInterval = 200;
-
-        const glitchEffect = (currentTime) => {
-            if (currentTime - lastTime > glitchInterval) {
-                const glitchedTarget = targetText
-                    .split("")
-                    .map(char => {
-                        if (Math.random() < 0.3) {
-                            return this.chars[Math.floor(Math.random() * this.chars.length)];
-                        }
-                        return char;
-                    })
-                    .join("");
-
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                if (Math.random() < 0.05) {
-                    ctx.fillStyle = '#0F0';
-                    const offset = Math.random() * 5;
-                    ctx.fillText(staticText + glitchedTarget, textX + offset, textY);
-                    ctx.fillStyle = '#FFF';
-                    ctx.fillText(staticText + glitchedTarget, textX - offset, textY);
-                } else {
-                    ctx.fillStyle = '#FFF';
-                    ctx.fillText(staticText + glitchedTarget, textX, textY);
-                }
-
-                lastTime = currentTime;
-            }
-
-            if (this.isRunning) {
-                this.animationFrameId = requestAnimationFrame(glitchEffect);
-            }
-        };
-
-        this.animationFrameId = requestAnimationFrame(glitchEffect);
     },
 
     stop() {
@@ -123,6 +75,106 @@ const GlitchText = {
         }
     }
 };
+
+function initAudioReactiveMatrix(matrix, audioElement) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass || !audioElement) return;
+
+    const audioCtx = new AudioContextClass();
+    const source = audioCtx.createMediaElementSource(audioElement);
+    const analyser = audioCtx.createAnalyser();
+
+    analyser.fftSize = 64;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+
+    function updateRainSpeed() {
+        analyser.getByteFrequencyData(dataArray);
+        const average = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
+        const normalized = average / 255;
+        matrix.setDropSpeed(0.4 + normalized * 2.5);
+        requestAnimationFrame(updateRainSpeed);
+    }
+
+    if (audioCtx.state === "suspended") {
+        audioCtx.resume().then(updateRainSpeed).catch(() => {});
+    } else {
+        updateRainSpeed();
+    }
+}
+
+class MatrixRain {
+    constructor(containerId) {
+        this.container = document.getElementById(containerId);
+        this.characters = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789@#$%^&*";
+        this.canvas = document.createElement('canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.container.appendChild(this.canvas);
+        this.speed = 1.5;
+
+        this.container.style.overflow = 'hidden';
+        this.container.style.position = 'fixed';
+        this.container.style.top = '0';
+        this.container.style.left = '0';
+        this.container.style.width = '100%';
+        this.container.style.height = '100%';
+
+        this.canvas.style.pointerEvents = 'none';
+        this.canvas.style.position = 'fixed';
+        this.canvas.style.top = '0';
+        this.canvas.style.left = '0';
+        this.canvas.style.zIndex = '1';
+        this.canvas.style.width = '100%';
+        this.canvas.style.height = '100%';
+
+        this.resize();
+        this.initDrops();
+        this.animate();
+        window.addEventListener('resize', () => this.resize());
+    }
+
+    resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+        this.fontSize = window.innerWidth <= 480 ? 12 : window.innerWidth <= 768 ? 14 : 16;
+        this.columns = Math.floor(this.canvas.width / this.fontSize);
+        this.drops = Array(this.columns).fill(0);
+        this.ctx.font = `${this.fontSize}px monospace`;
+    }
+
+    initDrops() {
+        this.drops = Array(this.columns).fill(0);
+    }
+
+    setDropSpeed(speed) {
+        this.speed = speed;
+    }
+
+    animate() {
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.fillStyle = '#0F0';
+
+        for (let i = 0; i < this.drops.length; i++) {
+            const text = this.characters[Math.floor(Math.random() * this.characters.length)];
+            const x = i * this.fontSize;
+            const y = this.drops[i] * this.fontSize;
+
+            this.ctx.fillText(text, x, y);
+
+            if (y > this.canvas.height && Math.random() > 0.975) {
+                this.drops[i] = 0;
+            }
+
+            this.drops[i] += this.speed;
+        }
+
+        requestAnimationFrame(() => this.animate());
+    }
+}
 
 (() => {
     const messages = ["Wake up, Neo...", "The Matrix has you..."];
@@ -363,9 +415,13 @@ const GlitchText = {
                 matrixAudio.currentTime = 0;
             }
 
-            matrixAudio.play().catch(error => {
-                console.error("Error playing Matrix soundtrack:", error);
-            });
+            matrixAudio.play()
+                .then(() => {
+                    initAudioReactiveMatrix(matrix, matrixAudio);
+                })
+                .catch(error => {
+                    console.error("Error playing Matrix soundtrack:", error);
+                });
         }
 
         setTimeout(() => {
@@ -386,96 +442,6 @@ const GlitchText = {
                 socialLinks.style.opacity = "1";
             });
         }, 2000);
-    }
-
-    class MatrixRain {
-        constructor(containerId, fontSize = 16) {
-            this.container = document.getElementById(containerId);
-            this.fontSize = fontSize;
-            this.characters = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789@#$%^&*";
-            this.columns = [];
-            this.drops = [];
-
-            this.container.style.overflow = 'hidden';
-            this.container.style.position = 'fixed';
-            this.container.style.top = '0';
-            this.container.style.left = '0';
-            this.container.style.width = '100%';
-            this.container.style.height = '100%';
-
-            this.init();
-            this.animate();
-        }
-
-        init() {
-            this.canvas = document.createElement('canvas');
-            this.ctx = this.canvas.getContext('2d');
-            this.container.appendChild(this.canvas);
-
-            this.canvas.style.pointerEvents = 'none';
-            this.canvas.style.position = 'fixed';
-            this.canvas.style.top = '0';
-            this.canvas.style.left = '0';
-            this.canvas.style.zIndex = '1';
-            this.canvas.style.width = '100%';
-            this.canvas.style.height = '100%';
-
-            this.resize();
-            window.addEventListener('resize', () => this.resize());
-            this.initDrops();
-        }
-
-        resize() {
-            this.canvas.width = window.innerWidth;
-            this.canvas.height = window.innerHeight;
-
-            if (window.innerWidth <= 480) {
-                this.fontSize = 12;
-            } else if (window.innerWidth <= 768) {
-                this.fontSize = 14;
-            } else {
-                this.fontSize = 16;
-            }
-
-            this.columns = Math.ceil(this.canvas.width / this.fontSize) + 1;
-            this.ctx.font = `${this.fontSize}px monospace`;
-
-            this.initDrops();
-
-            isMobileDevice = window.innerWidth <= 768;
-        }
-
-        initDrops() {
-            this.drops = [];
-            for (let i = 0; i < this.columns; i++) {
-                this.drops[i] = Math.floor(Math.random() * -100);
-            }
-        }
-
-        animate() {
-            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-            this.ctx.fillStyle = '#0F0';
-
-            for (let i = 0; i < this.drops.length; i++) {
-                const char = this.characters[Math.floor(Math.random() * this.characters.length)];
-                const x = (i * this.fontSize) - 1;
-                const y = this.drops[i] * this.fontSize;
-
-                this.ctx.fillText(char, x, y);
-
-                if (y > this.canvas.height && Math.random() > 0.975) {
-                    this.drops[i] = 0;
-                }
-
-                this.drops[i] += 0.7;
-            }
-
-            setTimeout(() => {
-                requestAnimationFrame(() => this.animate());
-            }, 33);
-        }
     }
 
     window.addEventListener('resize', () => {
@@ -499,5 +465,4 @@ const GlitchText = {
             isMobileDevice = window.innerWidth <= 768;
         }, 200);
     });
-
 })();
