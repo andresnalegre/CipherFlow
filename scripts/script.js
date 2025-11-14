@@ -404,8 +404,7 @@ const GlitchText = {
             this.analyser = null;
             this.audioData = null;
             this.audioEnabled = false;
-            this.columnEnergy = [];
-            this.globalEnergy = 0;
+            this.bassLevel = 0;
 
             this.container.style.overflow = 'hidden';
             this.container.style.position = 'fixed';
@@ -452,7 +451,6 @@ const GlitchText = {
             this.ctx.font = `${this.fontSize}px monospace`;
 
             this.initDrops();
-            this.columnEnergy = new Array(this.columns).fill(0);
 
             isMobileDevice = window.innerWidth <= 768;
         }
@@ -490,46 +488,54 @@ const GlitchText = {
 
             this.analyser.getByteFrequencyData(this.audioData);
 
-            const len = this.audioData.length;
+            const bassBins = Math.min(32, this.audioData.length);
             let sum = 0;
-            for (let i = 0; i < len; i++) {
+            for (let i = 0; i < bassBins; i++) {
                 sum += this.audioData[i];
             }
-            this.globalEnergy = sum / (len * 255);
-
-            const cols = this.columns;
-            if (!cols) return;
-
-            this.columnEnergy = new Array(cols);
-            for (let c = 0; c < cols; c++) {
-                const bin = Math.floor((c / cols) * len);
-                this.columnEnergy[c] = this.audioData[bin] / 255;
-            }
+            const avg = sum / (bassBins * 255);
+            this.bassLevel = this.bassLevel * 0.8 + avg * 0.2; // suavizado
         }
 
         animate() {
             this.updateAudio();
 
-            const trailAlpha = 0.05 + (this.globalEnergy || 0) * 0.08;
+            const trailAlpha = 0.05 + this.bassLevel * 0.12;
             this.ctx.fillStyle = `rgba(0, 0, 0, ${trailAlpha})`;
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+            const midY = this.canvas.height / 2;
+            const pulseRadius = this.fontSize * (2 + this.bassLevel * 10);
 
             for (let i = 0; i < this.drops.length; i++) {
                 const char = this.characters[Math.floor(Math.random() * this.characters.length)];
                 const x = (i * this.fontSize) - 1;
                 const y = this.drops[i] * this.fontSize;
 
-                const energy = this.columnEnergy[i] || 0;
-                const alpha = 0.25 + energy * 0.75;
-                this.ctx.fillStyle = `rgba(0, 255, 0, ${alpha})`;
-
+                let fill = '#0F0';
+                this.ctx.fillStyle = fill;
                 this.ctx.fillText(char, x, y);
 
-                if (energy > 0.4) {
-                    const glowHeight = this.fontSize * (1.5 + energy * 6);
-                    this.ctx.globalAlpha = 0.18 + energy * 0.35;
-                    this.ctx.fillRect(x, y - glowHeight, this.fontSize * 0.7, glowHeight);
-                    this.ctx.globalAlpha = 1;
+                if (this.bassLevel > 0.05 && pulseRadius > 0) {
+                    const distToMid = Math.abs(y - midY);
+                    if (distToMid < pulseRadius) {
+                        const t = 1 - distToMid / pulseRadius;
+                        const intensity = t * this.bassLevel;
+
+                        this.ctx.save();
+                        this.ctx.fillStyle = '#0F0';
+                        this.ctx.globalAlpha = 0.25 + intensity * 0.75;
+
+                        const glowHeight = this.fontSize * (3 + this.bassLevel * 10);
+                        this.ctx.fillRect(
+                            x,
+                            midY - glowHeight / 2,
+                            this.fontSize * 0.9,
+                            glowHeight
+                        );
+
+                        this.ctx.restore();
+                    }
                 }
 
                 if (y > this.canvas.height && Math.random() > 0.975) {
