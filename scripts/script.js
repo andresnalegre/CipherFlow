@@ -465,7 +465,7 @@ const GlitchText = {
             this.ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-            const alpha = 0.4 + this.audioLevel * 0.6;
+            const alpha = 0.3 + this.audioLevel * 0.7;
 
             for (let i = 0; i < this.drops.length; i++) {
                 const char = this.characters[Math.floor(Math.random() * this.characters.length)];
@@ -475,9 +475,14 @@ const GlitchText = {
                 this.ctx.fillStyle = `rgba(0, 255, 0, ${alpha})`;
                 this.ctx.fillText(char, x, y);
 
-                if (this.audioLevel > 0.6 && Math.random() < this.audioLevel * 0.3) {
-                    this.ctx.fillStyle = `rgba(0, 255, 100, ${this.audioLevel * 0.35})`;
-                    this.ctx.fillRect(x, 0, this.fontSize, this.canvas.height);
+                if (this.audioLevel > 0.25 && Math.random() < this.audioLevel * 0.8) {
+                    this.ctx.fillStyle = `rgba(180, 255, 180, ${this.audioLevel})`;
+                    this.ctx.fillText(char, x, y - this.fontSize);
+                }
+
+                if (this.audioLevel > 0.6 && Math.random() < this.audioLevel * 0.4) {
+                    this.ctx.fillStyle = `rgba(0, 255, 120, ${this.audioLevel * 0.7})`;
+                    this.ctx.fillRect(x, 0, 1, this.canvas.height);
                 }
 
                 if (y > this.canvas.height && Math.random() > 0.975) {
@@ -501,7 +506,7 @@ const GlitchText = {
         const source = audioCtx.createMediaElementSource(audioElement);
         const analyser = audioCtx.createAnalyser();
 
-        analyser.fftSize = 128;
+        analyser.fftSize = 256;
         const bufferLength = analyser.frequencyBinCount;
         const dataArray = new Uint8Array(bufferLength);
 
@@ -510,10 +515,15 @@ const GlitchText = {
 
         function updateLevel() {
             analyser.getByteFrequencyData(dataArray);
-            const sum = dataArray.reduce((a, b) => a + b, 0);
-            const average = sum / bufferLength;
-            const normalized = average / 255;
+
+            let max = 0;
+            for (let i = 0; i < bufferLength; i++) {
+                if (dataArray[i] > max) max = dataArray[i];
+            }
+
+            const normalized = max / 255;
             matrix.setAudioLevel(normalized);
+
             requestAnimationFrame(updateLevel);
         }
 
