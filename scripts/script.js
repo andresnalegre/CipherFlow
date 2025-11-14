@@ -59,29 +59,32 @@ const GlitchText = {
         ctx.shadowOffsetY = 0;
 
         this.startGlitch(ctx, textX, textY, staticText, targetText, boundingBox, canvas);
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const newFontSize = this.calculateFontSize();
+            ctx.font = `bold ${newFontSize}px 'Courier New'`;
+            ctx.fillStyle = "rgba(255, 255, 255, 1)";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.shadowColor = '#0F0';
+            ctx.shadowBlur = newFontSize / 5;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+        });
     },
 
     startGlitch(ctx, textX, textY, staticText, targetText, boundingBox, canvas) {
         let lastTime = 0;
-        const glitchInterval = 180;
+        const glitchInterval = 200;
 
         const glitchEffect = (currentTime) => {
-            if (!this.isRunning) {
-                return;
-            }
-
-            const delta = currentTime - lastTime;
-
-            if (delta > glitchInterval) {
-                lastTime = currentTime;
-
-                const intensity = Math.random();
-                const glitchChance = 0.35 + intensity * 0.25;
-
+            if (currentTime - lastTime > glitchInterval) {
                 const glitchedTarget = targetText
                     .split("")
                     .map(char => {
-                        if (Math.random() < glitchChance) {
+                        if (Math.random() < 0.3) {
                             return this.chars[Math.floor(Math.random() * this.chars.length)];
                         }
                         return char;
@@ -90,21 +93,7 @@ const GlitchText = {
 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                ctx.save();
-
-                if (intensity > 0.75) {
-                    const offsetX = (Math.random() - 0.5) * 10;
-                    const offsetY = (Math.random() - 0.5) * 3;
-                    ctx.translate(offsetX, offsetY);
-                }
-
-                if (intensity > 0.8) {
-                    ctx.fillStyle = '#0F0';
-                    const sliceOffset = (Math.random() - 0.5) * 12;
-                    ctx.fillText(staticText + glitchedTarget, textX + sliceOffset, textY);
-                    ctx.fillStyle = '#FFF';
-                    ctx.fillText(staticText + glitchedTarget, textX - sliceOffset, textY);
-                } else if (Math.random() < 0.08) {
+                if (Math.random() < 0.05) {
                     ctx.fillStyle = '#0F0';
                     const offset = Math.random() * 5;
                     ctx.fillText(staticText + glitchedTarget, textX + offset, textY);
@@ -115,10 +104,12 @@ const GlitchText = {
                     ctx.fillText(staticText + glitchedTarget, textX, textY);
                 }
 
-                ctx.restore();
+                lastTime = currentTime;
             }
 
-            this.animationFrameId = requestAnimationFrame(glitchEffect);
+            if (this.isRunning) {
+                this.animationFrameId = requestAnimationFrame(glitchEffect);
+            }
         };
 
         this.animationFrameId = requestAnimationFrame(glitchEffect);
@@ -508,4 +499,5 @@ const GlitchText = {
             isMobileDevice = window.innerWidth <= 768;
         }, 200);
     });
+
 })();
