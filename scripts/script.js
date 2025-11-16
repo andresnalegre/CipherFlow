@@ -125,13 +125,7 @@ const GlitchText = {
 };
 
 (() => {
-    const messages = [
-        "Something is wrong with this reality...",
-        "The code is starting to glitch...",
-        "I feel like I'm slipping out of this world...",
-        "Could this all be just a dream?",
-        "Is this what we call life?"
-    ];
+    const messages = ["Wake up, Neo...", "The Matrix has you..."];
     const typingText = document.getElementById("typingText");
 
     // ===== MATRIX AUDIO VIA JS =====
@@ -347,7 +341,6 @@ const GlitchText = {
     blackOverlay.addEventListener('click', handleInitialClick);
     blackOverlay.addEventListener('touchstart', handleInitialClick);
 
-    // === VOLTA AO COMPORTAMENTO ORIGINAL: digita só a primeira mensagem ===
     function startSequence() {
         typeMessage(messages[0], () => {
             document.addEventListener("click", handleFirstClick);
@@ -473,7 +466,6 @@ const GlitchText = {
     }
 
     function showSecondMessage() {
-        // mantém o comportamento original: usa a segunda mensagem do array
         typeMessage(messages[1], () => {
             typingText.classList.add("blink");
 
