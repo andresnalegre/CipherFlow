@@ -128,7 +128,7 @@ const GlitchText = {
     const messages = ["Wake up, Neo...", "The Matrix has you..."];
     const typingText = document.getElementById("typingText");
 
-    // --- ÁUDIO MATRIX CRIADO VIA JS ---
+    // === MATRIX AUDIO VIA JS ===
     let matrixAudio = null;
 
     function initMatrixAudio() {
@@ -139,7 +139,106 @@ const GlitchText = {
             matrixAudio.volume = 0.3;
         }
     }
-    // ----------------------------------
+    // ===========================
+
+    // === OPENING VIDEO ===
+    let openingVideoContainer = null;
+    let openingVideo = null;
+    let openingVideoPlayed = false;
+
+    function createOpeningVideo() {
+        openingVideoContainer = document.createElement('div');
+        openingVideoContainer.id = 'openingVideoContainer';
+        openingVideoContainer.style.position = 'fixed';
+        openingVideoContainer.style.top = '0';
+        openingVideoContainer.style.left = '0';
+        openingVideoContainer.style.width = '100%';
+        openingVideoContainer.style.height = '100%';
+        openingVideoContainer.style.backgroundColor = '#000';
+        openingVideoContainer.style.display = 'flex';
+        openingVideoContainer.style.alignItems = 'center';
+        openingVideoContainer.style.justifyContent = 'center';
+        openingVideoContainer.style.zIndex = '1200';
+        openingVideoContainer.style.opacity = '1';
+        openingVideoContainer.style.pointerEvents = 'auto';
+
+        openingVideo = document.createElement('video');
+        openingVideo.src = './assets/video/opening.mp4';
+        openingVideo.autoplay = false;
+        openingVideo.playsInline = true;
+        openingVideo.muted = true; // se quiser áudio do vídeo, coloque false (mas pode quebrar autoplay em mobile)
+        openingVideo.style.maxWidth = '100%';
+        openingVideo.style.maxHeight = '100%';
+        openingVideo.style.objectFit = 'cover';
+
+        openingVideoContainer.appendChild(openingVideo);
+    }
+
+    function removeOpeningVideo() {
+        if (openingVideoContainer && openingVideoContainer.parentNode) {
+            openingVideoContainer.parentNode.removeChild(openingVideoContainer);
+        }
+    }
+
+    function removeOpeningVideoWithFade() {
+        if (!openingVideoContainer) {
+            startIntroAfterVideo();
+            return;
+        }
+
+        openingVideoContainer.style.transition = 'opacity 0.8s';
+        openingVideoContainer.style.opacity = '0';
+
+        setTimeout(() => {
+            removeOpeningVideo();
+            startIntroAfterVideo();
+        }, 800);
+    }
+
+    function playOpeningVideo() {
+        if (openingVideoPlayed) {
+            startIntroAfterVideo();
+            return;
+        }
+
+        if (!openingVideoContainer) {
+            createOpeningVideo();
+        }
+
+        document.body.appendChild(openingVideoContainer);
+
+        const playPromise = openingVideo.play();
+
+        if (playPromise !== undefined) {
+            playPromise
+                .then(() => {
+                    // vídeo começou de boa
+                })
+                .catch(err => {
+                    console.error('Error playing opening video:', err);
+                    removeOpeningVideo();
+                    startIntroAfterVideo();
+                });
+        }
+
+        openingVideo.onended = () => {
+            openingVideoPlayed = true;
+            removeOpeningVideoWithFade();
+        };
+
+        openingVideo.onerror = () => {
+            console.error('Error loading opening video');
+            removeOpeningVideo();
+            startIntroAfterVideo();
+        };
+    }
+
+    function startIntroAfterVideo() {
+        typingText.style.transition = 'opacity 0.5s';
+        typingText.style.opacity = '1';
+        startSequence();
+    }
+    // =====================
 
     const typewriterAudioPool = [];
     const AUDIO_POOL_SIZE = 3;
@@ -196,9 +295,13 @@ const GlitchText = {
                 })
                 .catch(error => {
                     console.log("Error initializing audio:", error);
-                    document.addEventListener('click', () => {
-                        if (!audioInitialized) initializeAudio();
-                    }, { once: true });
+                    document.addEventListener(
+                        'click',
+                        () => {
+                            if (!audioInitialized) initializeAudio();
+                        },
+                        { once: true }
+                    );
                 });
         }
     }
@@ -210,12 +313,11 @@ const GlitchText = {
         blackOverlay.style.opacity = '0';
 
         setTimeout(() => {
-            document.body.removeChild(blackOverlay);
-
-            typingText.style.transition = 'opacity 0.5s';
-            typingText.style.opacity = '1';
-
-            startSequence();
+            if (blackOverlay.parentNode) {
+                document.body.removeChild(blackOverlay);
+            }
+            // depois que o overlay some, toca o vídeo de abertura
+            playOpeningVideo();
         }, 1000);
 
         blackOverlay.removeEventListener('click', handleInitialClick);
@@ -389,6 +491,7 @@ const GlitchText = {
         }
 
         setTimeout(() => {
+            const developerCredit = document.getElementById("developerCredit");
             developerCredit.classList.remove("hidden");
             developerCredit.style.opacity = "0";
             developerCredit.style.zIndex = "1000";
