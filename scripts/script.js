@@ -127,7 +127,19 @@ const GlitchText = {
 (() => {
     const messages = ["Wake up, Neo...", "The Matrix has you..."];
     const typingText = document.getElementById("typingText");
-    const matrixAudio = document.getElementById("matrixAudio");
+
+    // --- ÁUDIO MATRIX CRIADO VIA JS ---
+    let matrixAudio = null;
+
+    function initMatrixAudio() {
+        if (!matrixAudio) {
+            matrixAudio = new Audio('./assets/audio/Matrix Soundtrack.mp3');
+            matrixAudio.loop = true;
+            matrixAudio.preload = 'auto';
+            matrixAudio.volume = 0.3;
+        }
+    }
+    // ----------------------------------
 
     const typewriterAudioPool = [];
     const AUDIO_POOL_SIZE = 3;
@@ -145,8 +157,6 @@ const GlitchText = {
     let messageSequenceComplete = false;
     let activeTypewriterSounds = [];
 
-    matrixAudio.volume = 0.3;
-
     const blackOverlay = document.createElement('div');
     blackOverlay.id = 'blackOverlay';
     blackOverlay.style.position = 'fixed';
@@ -163,10 +173,20 @@ const GlitchText = {
 
     function initializeAudio() {
         if (!audioInitialized) {
-            const promises = [matrixAudio.play().then(() => matrixAudio.pause())];
+            initMatrixAudio();
+
+            const promises = [];
+
+            if (matrixAudio) {
+                promises.push(
+                    matrixAudio.play().then(() => matrixAudio.pause())
+                );
+            }
 
             typewriterAudioPool.forEach(audio => {
-                promises.push(audio.play().then(() => audio.pause()));
+                promises.push(
+                    audio.play().then(() => audio.pause())
+                );
             });
 
             Promise.all(promises)
@@ -356,7 +376,7 @@ const GlitchText = {
             }
         }, 100);
 
-        if (audioInitialized && messageSequenceComplete) {
+        if (audioInitialized && messageSequenceComplete && matrixAudio) {
             console.log("Playing Matrix soundtrack");
 
             if (isMobileDevice) {
