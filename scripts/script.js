@@ -166,7 +166,12 @@ const GlitchText = {
         openingVideo.src = './assets/video/opening.mp4';
         openingVideo.autoplay = false;
         openingVideo.playsInline = true;
-        openingVideo.muted = true; // se quiser áudio do vídeo, coloque false (mas pode quebrar autoplay em mobile)
+
+        // 🔊 AGORA COM ÁUDIO:
+        openingVideo.muted = false;
+        openingVideo.volume = 1.0;
+        openingVideo.controls = false; // se quiser, pode por true pra testar
+
         openingVideo.style.maxWidth = '100%';
         openingVideo.style.maxHeight = '100%';
         openingVideo.style.objectFit = 'cover';
