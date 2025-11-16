@@ -132,9 +132,132 @@ const GlitchText = {
         "Could this all be just a dream?",
         "Is this what we call life?"
     ];
-
     const typingText = document.getElementById("typingText");
-    const matrixAudio = document.getElementById("matrixAudio");
+
+    // ===== MATRIX AUDIO VIA JS =====
+    let matrixAudio = null;
+
+    function initMatrixAudio() {
+        if (!matrixAudio) {
+            matrixAudio = new Audio('./assets/audio/Matrix Soundtrack.mp3');
+            matrixAudio.loop = true;
+            matrixAudio.preload = 'auto';
+            matrixAudio.volume = 0.3;
+        }
+    }
+    // ===============================
+
+    // ===== OPENING VIDEO =====
+    let openingVideoContainer = null;
+    let openingVideo = null;
+    let openingVideoPlayed = false;
+
+    function createOpeningVideo() {
+        openingVideoContainer = document.createElement('div');
+        openingVideoContainer.id = 'openingVideoContainer';
+        openingVideoContainer.style.position = 'fixed';
+        openingVideoContainer.style.top = '0';
+        openingVideoContainer.style.left = '0';
+        openingVideoContainer.style.width = '100%';
+        openingVideoContainer.style.height = '100%';
+        openingVideoContainer.style.backgroundColor = '#000';
+        openingVideoContainer.style.display = 'flex';
+        openingVideoContainer.style.alignItems = 'center';
+        openingVideoContainer.style.justifyContent = 'center';
+        openingVideoContainer.style.zIndex = '1200';
+        openingVideoContainer.style.opacity = '1';
+        openingVideoContainer.style.pointerEvents = 'auto';
+
+        openingVideo = document.createElement('video');
+        openingVideo.src = './assets/video/opening.mp4';
+        openingVideo.autoplay = false;
+        openingVideo.playsInline = true;
+        openingVideo.preload = 'auto';
+        openingVideo.muted = false;
+        openingVideo.volume = 1.0;
+        openingVideo.controls = false;
+
+        openingVideo.style.maxWidth = '100%';
+        openingVideo.style.maxHeight = '100%';
+        openingVideo.style.objectFit = 'cover';
+
+        openingVideoContainer.appendChild(openingVideo);
+
+        try {
+            openingVideo.load();
+        } catch (e) {
+            console.warn('Erro ao chamar load() do vídeo:', e);
+        }
+    }
+
+    function removeOpeningVideo() {
+        if (openingVideoContainer && openingVideoContainer.parentNode) {
+            openingVideoContainer.parentNode.removeChild(openingVideoContainer);
+        }
+    }
+
+    function removeOpeningVideoWithFade() {
+        if (!openingVideoContainer) {
+            startIntroAfterVideo();
+            return;
+        }
+
+        openingVideoContainer.style.transition = 'opacity 0.8s';
+        openingVideoContainer.style.opacity = '0';
+
+        setTimeout(() => {
+            removeOpeningVideo();
+            startIntroAfterVideo();
+        }, 800);
+    }
+
+    function playOpeningVideo() {
+        if (openingVideoPlayed) {
+            startIntroAfterVideo();
+            return;
+        }
+
+        if (!openingVideoContainer) {
+            createOpeningVideo();
+        }
+
+        document.body.appendChild(openingVideoContainer);
+
+        const playPromise = openingVideo.play();
+
+        if (playPromise !== undefined) {
+            playPromise
+                .then(() => {
+                    // vídeo começou
+                })
+                .catch(err => {
+                    console.error('Error playing opening video:', err);
+                    removeOpeningVideo();
+                    startIntroAfterVideo();
+                });
+        }
+
+        openingVideo.onended = () => {
+            openingVideoPlayed = true;
+            removeOpeningVideoWithFade();
+        };
+
+        openingVideo.onerror = () => {
+            console.error('Error loading opening video');
+            removeOpeningVideo();
+            startIntroAfterVideo();
+        };
+    }
+
+    function startIntroAfterVideo() {
+        typingText.style.transition = 'opacity 0.5s';
+        typingText.style.opacity = '1';
+        startSequence();
+    }
+
+    // cria e começa a pré-carregar o vídeo assim que o script carrega
+    createOpeningVideo();
+    // ==========================
 
     const typewriterAudioPool = [];
     const AUDIO_POOL_SIZE = 3;
@@ -152,12 +275,6 @@ const GlitchText = {
     let messageSequenceComplete = false;
     let activeTypewriterSounds = [];
 
-    // controle de múltiplas mensagens
-    let currentMessageIndex = 0;
-    let waitingForAdvance = false;
-
-    matrixAudio.volume = 0.3;
-
     const blackOverlay = document.createElement('div');
     blackOverlay.id = 'blackOverlay';
     blackOverlay.style.position = 'fixed';
@@ -174,10 +291,20 @@ const GlitchText = {
 
     function initializeAudio() {
         if (!audioInitialized) {
-            const promises = [matrixAudio.play().then(() => matrixAudio.pause())];
+            initMatrixAudio();
+
+            const promises = [];
+
+            if (matrixAudio) {
+                promises.push(
+                    matrixAudio.play().then(() => matrixAudio.pause())
+                );
+            }
 
             typewriterAudioPool.forEach(audio => {
-                promises.push(audio.play().then(() => audio.pause()));
+                promises.push(
+                    audio.play().then(() => audio.pause())
+                );
             });
 
             Promise.all(promises)
@@ -187,9 +314,13 @@ const GlitchText = {
                 })
                 .catch(error => {
                     console.log("Error initializing audio:", error);
-                    document.addEventListener('click', () => {
-                        if (!audioInitialized) initializeAudio();
-                    }, { once: true });
+                    document.addEventListener(
+                        'click',
+                        () => {
+                            if (!audioInitialized) initializeAudio();
+                        },
+                        { once: true }
+                    );
                 });
         }
     }
@@ -197,19 +328,17 @@ const GlitchText = {
     function handleInitialClick() {
         initializeAudio();
 
-        blackOverlay.style.transition = 'opacity 1s';
+        // começa o vídeo imediatamente, overlay vai sumindo por cima
+        playOpeningVideo();
+
+        blackOverlay.style.transition = 'opacity 0.6s';
         blackOverlay.style.opacity = '0';
 
         setTimeout(() => {
             if (blackOverlay.parentNode) {
                 document.body.removeChild(blackOverlay);
             }
-
-            typingText.style.transition = 'opacity 0.5s';
-            typingText.style.opacity = '1';
-
-            startSequence();
-        }, 1000);
+        }, 600);
 
         blackOverlay.removeEventListener('click', handleInitialClick);
         blackOverlay.removeEventListener('touchstart', handleInitialClick);
@@ -218,67 +347,46 @@ const GlitchText = {
     blackOverlay.addEventListener('click', handleInitialClick);
     blackOverlay.addEventListener('touchstart', handleInitialClick);
 
-    // === MECÂNICA: igual ao original, mas agora para 5 mensagens ===
     function startSequence() {
-        currentMessageIndex = 0;
-        typeMessage(messages[currentMessageIndex], () => {
-            enableAdvanceHandlers();
-        });
-    }
+        let index = 0;
 
-    function enableAdvanceHandlers() {
-        waitingForAdvance = true;
-        document.addEventListener("click", handleAdvance);
-        document.addEventListener("touchstart", handleAdvance);
-        document.addEventListener("keydown", handleAdvanceKeydown);
-    }
-
-    function disableAdvanceHandlers() {
-        waitingForAdvance = false;
-        document.removeEventListener("click", handleAdvance);
-        document.removeEventListener("touchstart", handleAdvance);
-        document.removeEventListener("keydown", handleAdvanceKeydown);
-    }
-
-    function handleAdvance(event) {
-        if (!waitingForAdvance) return;
-        disableAdvanceHandlers();
-
-        stopAllTypewriterSounds();
-
-        deleteMessage(() => {
-            currentMessageIndex++;
-
-            if (currentMessageIndex < messages.length) {
-                // ainda tem mensagem pra mostrar
-                setTimeout(() => {
-                    typeMessage(messages[currentMessageIndex], () => {
-                        // se ainda não for a última, espera novo clique
-                        if (currentMessageIndex < messages.length - 1) {
-                            enableAdvanceHandlers();
-                        } else {
-                            // última mensagem: pisca, finaliza e entra na Matrix
-                            typingText.classList.add("blink");
-                            messageSequenceComplete = true;
-                            setTimeout(startMatrixExperience, 1000);
-                        }
-                    });
-                }, 400);
+        function showNextMessage() {
+            if (index < messages.length) {
+                typeMessage(messages[index], () => {
+                    setTimeout(() => {
+                        deleteMessage(() => {
+                            index++;
+                            setTimeout(showNextMessage, 400);
+                        });
+                    }, 700);
+                });
             } else {
-                // fallback, mas em teoria nunca cai aqui
                 typingText.classList.add("blink");
                 messageSequenceComplete = true;
                 setTimeout(startMatrixExperience, 1000);
             }
+        }
+
+        showNextMessage();
+    }
+
+    function handleFirstClick() {
+        document.removeEventListener("click", handleFirstClick);
+        document.removeEventListener("touchstart", handleFirstClick);
+        document.removeEventListener("keydown", handleFirstKeydown);
+
+        stopAllTypewriterSounds();
+
+        deleteMessage(() => {
+            setTimeout(showSecondMessage, 500);
         });
     }
 
-    function handleAdvanceKeydown(event) {
+    function handleFirstKeydown(event) {
         if (event.key === " " || event.key === "Enter") {
-            handleAdvance();
+            handleFirstClick();
         }
     }
-    // =============================================
 
     function stopAllTypewriterSounds() {
         activeTypewriterSounds.forEach(audio => {
@@ -378,6 +486,18 @@ const GlitchText = {
         deleteChar();
     }
 
+    // Mantida só por compatibilidade; não é mais usada como antes,
+    // mas deixo se alguma parte do código ainda chamar.
+    function showSecondMessage() {
+        typeMessage(messages[1], () => {
+            typingText.classList.add("blink");
+
+            messageSequenceComplete = true;
+
+            setTimeout(startMatrixExperience, 1000);
+        });
+    }
+
     function startMatrixExperience() {
         const matrixContainer = document.getElementById("matrixContainer");
         const overlayText = document.getElementById("overlayText");
@@ -395,7 +515,7 @@ const GlitchText = {
             }
         }, 100);
 
-        if (audioInitialized && messageSequenceComplete) {
+        if (audioInitialized && messageSequenceComplete && matrixAudio) {
             console.log("Playing Matrix soundtrack");
 
             if (isMobileDevice) {
@@ -408,11 +528,12 @@ const GlitchText = {
         }
 
         setTimeout(() => {
-            developerCredit.classList.remove("hidden");
-            developerCredit.style.opacity = "0";
-            developerCredit.style.zIndex = "1000";
+            const developerCreditEl = document.getElementById("developerCredit");
+            developerCreditEl.classList.remove("hidden");
+            developerCreditEl.style.opacity = "0";
+            developerCreditEl.style.zIndex = "1000";
             requestAnimationFrame(() => {
-                developerCredit.style.opacity = "1";
+                developerCreditEl.style.opacity = "1";
             });
         }, 1500);
 
