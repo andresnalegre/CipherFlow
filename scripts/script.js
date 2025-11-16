@@ -125,7 +125,13 @@ const GlitchText = {
 };
 
 (() => {
-    const messages = ["Wake up, Neo...", "The Matrix has you..."];
+    const messages = [
+        "Something is wrong with this reality...",
+        "The code is starting to glitch...",
+        "I feel like I'm slipping out of this world...",
+        "Could this all be just a dream?",
+        "Is this what we call life?"
+    ];
     const typingText = document.getElementById("typingText");
 
     // ===== MATRIX AUDIO VIA JS =====
@@ -342,11 +348,26 @@ const GlitchText = {
     blackOverlay.addEventListener('touchstart', handleInitialClick);
 
     function startSequence() {
-        typeMessage(messages[0], () => {
-            document.addEventListener("click", handleFirstClick);
-            document.addEventListener("touchstart", handleFirstClick);
-            document.addEventListener("keydown", handleFirstKeydown);
-        });
+        let index = 0;
+
+        function showNextMessage() {
+            if (index < messages.length) {
+                typeMessage(messages[index], () => {
+                    setTimeout(() => {
+                        deleteMessage(() => {
+                            index++;
+                            setTimeout(showNextMessage, 400);
+                        });
+                    }, 700);
+                });
+            } else {
+                typingText.classList.add("blink");
+                messageSequenceComplete = true;
+                setTimeout(startMatrixExperience, 1000);
+            }
+        }
+
+        showNextMessage();
     }
 
     function handleFirstClick() {
@@ -465,6 +486,8 @@ const GlitchText = {
         deleteChar();
     }
 
+    // Mantida só por compatibilidade; não é mais usada como antes,
+    // mas deixo se alguma parte do código ainda chamar.
     function showSecondMessage() {
         typeMessage(messages[1], () => {
             typingText.classList.add("blink");
