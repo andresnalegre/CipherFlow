@@ -128,7 +128,7 @@ const GlitchText = {
     const messages = ["Wake up, Neo...", "The Matrix has you..."];
     const typingText = document.getElementById("typingText");
 
-    // === MATRIX AUDIO VIA JS ===
+    // ===== MATRIX AUDIO VIA JS =====
     let matrixAudio = null;
 
     function initMatrixAudio() {
@@ -139,9 +139,9 @@ const GlitchText = {
             matrixAudio.volume = 0.3;
         }
     }
-    // ===========================
+    // ===============================
 
-    // === OPENING VIDEO ===
+    // ===== OPENING VIDEO =====
     let openingVideoContainer = null;
     let openingVideo = null;
     let openingVideoPlayed = false;
@@ -166,17 +166,22 @@ const GlitchText = {
         openingVideo.src = './assets/video/opening.mp4';
         openingVideo.autoplay = false;
         openingVideo.playsInline = true;
-
-        // 🔊 AGORA COM ÁUDIO:
+        openingVideo.preload = 'auto';
         openingVideo.muted = false;
         openingVideo.volume = 1.0;
-        openingVideo.controls = false; // se quiser, pode por true pra testar
+        openingVideo.controls = false;
 
         openingVideo.style.maxWidth = '100%';
         openingVideo.style.maxHeight = '100%';
         openingVideo.style.objectFit = 'cover';
 
         openingVideoContainer.appendChild(openingVideo);
+
+        try {
+            openingVideo.load();
+        } catch (e) {
+            console.warn('Erro ao chamar load() do vídeo:', e);
+        }
     }
 
     function removeOpeningVideo() {
@@ -217,7 +222,7 @@ const GlitchText = {
         if (playPromise !== undefined) {
             playPromise
                 .then(() => {
-                    // vídeo começou de boa
+                    // vídeo começou
                 })
                 .catch(err => {
                     console.error('Error playing opening video:', err);
@@ -243,7 +248,10 @@ const GlitchText = {
         typingText.style.opacity = '1';
         startSequence();
     }
-    // =====================
+
+    // cria e começa a pré-carregar o vídeo assim que o script carrega
+    createOpeningVideo();
+    // ==========================
 
     const typewriterAudioPool = [];
     const AUDIO_POOL_SIZE = 3;
@@ -314,16 +322,17 @@ const GlitchText = {
     function handleInitialClick() {
         initializeAudio();
 
-        blackOverlay.style.transition = 'opacity 1s';
+        // começa o vídeo imediatamente, overlay vai sumindo por cima
+        playOpeningVideo();
+
+        blackOverlay.style.transition = 'opacity 0.6s';
         blackOverlay.style.opacity = '0';
 
         setTimeout(() => {
             if (blackOverlay.parentNode) {
                 document.body.removeChild(blackOverlay);
             }
-            // depois que o overlay some, toca o vídeo de abertura
-            playOpeningVideo();
-        }, 1000);
+        }, 600);
 
         blackOverlay.removeEventListener('click', handleInitialClick);
         blackOverlay.removeEventListener('touchstart', handleInitialClick);
@@ -496,12 +505,12 @@ const GlitchText = {
         }
 
         setTimeout(() => {
-            const developerCredit = document.getElementById("developerCredit");
-            developerCredit.classList.remove("hidden");
-            developerCredit.style.opacity = "0";
-            developerCredit.style.zIndex = "1000";
+            const developerCreditEl = document.getElementById("developerCredit");
+            developerCreditEl.classList.remove("hidden");
+            developerCreditEl.style.opacity = "0";
+            developerCreditEl.style.zIndex = "1000";
             requestAnimationFrame(() => {
-                developerCredit.style.opacity = "1";
+                developerCreditEl.style.opacity = "1";
             });
         }, 1500);
 
