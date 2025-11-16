@@ -228,7 +228,7 @@ body {
 
 /* Improved "Click to enter" text */
 #blackOverlay::after {
-  content: "Click to enter";
+  content: "Click to Start";
   position: absolute;
   font-family: 'Courier New', monospace;
   font-size: 28px;
