@@ -125,16 +125,14 @@ const GlitchText = {
 };
 
 (() => {
-
     const messages = [
-        "Hello… I’ve been waiting for this moment.",
-        "Your story is about to change.",
-        "Nothing will be the same after this."
+    "Hello… I’ve been waiting for this moment.",
+    "Your story is about to change.",
+    "Nothing will be the same after this."
     ];
-
     const typingText = document.getElementById("typingText");
 
-    // ===== MATRIX AUDIO =====
+    // ===== MATRIX AUDIO VIA JS =====
     let matrixAudio = null;
 
     function initMatrixAudio() {
@@ -145,7 +143,7 @@ const GlitchText = {
             matrixAudio.volume = 0.3;
         }
     }
-
+    // ===============================
 
     // ===== OPENING VIDEO =====
     let openingVideoContainer = null;
@@ -227,7 +225,9 @@ const GlitchText = {
 
         if (playPromise !== undefined) {
             playPromise
-                .then(() => {})
+                .then(() => {
+                    // vídeo começou
+                })
                 .catch(err => {
                     console.error('Error playing opening video:', err);
                     removeOpeningVideo();
@@ -253,10 +253,10 @@ const GlitchText = {
         startSequence();
     }
 
+    // cria e começa a pré-carregar o vídeo assim que o script carrega
     createOpeningVideo();
+    // ==========================
 
-
-    // ===== TYPEWRITER AUDIO =====
     const typewriterAudioPool = [];
     const AUDIO_POOL_SIZE = 3;
 
@@ -294,32 +294,39 @@ const GlitchText = {
             const promises = [];
 
             if (matrixAudio) {
-                promises.push(matrixAudio.play().then(() => matrixAudio.pause()));
+                promises.push(
+                    matrixAudio.play().then(() => matrixAudio.pause())
+                );
             }
 
             typewriterAudioPool.forEach(audio => {
-                promises.push(audio.play().then(() => audio.pause()));
+                promises.push(
+                    audio.play().then(() => audio.pause())
+                );
             });
 
             Promise.all(promises)
                 .then(() => {
                     audioInitialized = true;
+                    console.log("Audio initialized successfully");
                 })
-                .catch(() => {
+                .catch(error => {
+                    console.log("Error initializing audio:", error);
                     document.addEventListener(
                         'click',
-                        () => !audioInitialized && initializeAudio(),
+                        () => {
+                            if (!audioInitialized) initializeAudio();
+                        },
                         { once: true }
                     );
                 });
         }
     }
 
-    blackOverlay.addEventListener('click', handleInitialClick);
-    blackOverlay.addEventListener('touchstart', handleInitialClick);
-
     function handleInitialClick() {
         initializeAudio();
+
+        // começa o vídeo imediatamente, overlay vai sumindo por cima
         playOpeningVideo();
 
         blackOverlay.style.transition = 'opacity 0.6s';
@@ -330,10 +337,14 @@ const GlitchText = {
                 document.body.removeChild(blackOverlay);
             }
         }, 600);
+
+        blackOverlay.removeEventListener('click', handleInitialClick);
+        blackOverlay.removeEventListener('touchstart', handleInitialClick);
     }
 
+    blackOverlay.addEventListener('click', handleInitialClick);
+    blackOverlay.addEventListener('touchstart', handleInitialClick);
 
-    // ===== TYPEWRITER LOGIC =====
     function startSequence() {
         typeMessage(messages[0], () => {
             document.addEventListener("click", handleFirstClick);
@@ -365,7 +376,9 @@ const GlitchText = {
             try {
                 audio.pause();
                 audio.currentTime = 0;
-            } catch {}
+            } catch (e) {
+                console.error("Error stopping typewriter sound:", e);
+            }
         });
         activeTypewriterSounds = [];
     }
@@ -375,28 +388,49 @@ const GlitchText = {
 
         try {
             const audio = typewriterAudioPool[audioIndex];
+
             audio.currentTime = 0;
 
-            audio.play().catch(() => {});
+            const playPromise = audio.play();
+
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.error("Error playing typewriter sound:", error);
+                    const index = activeTypewriterSounds.indexOf(audio);
+                    if (index > -1) {
+                        activeTypewriterSounds.splice(index, 1);
+                    }
+                });
+            }
 
             activeTypewriterSounds.push(audio);
 
+            const soundDuration = isMobileDevice ? 200 : 150;
             setTimeout(() => {
-                const idx = activeTypewriterSounds.indexOf(audio);
-                if (idx > -1) activeTypewriterSounds.splice(idx, 1);
-            }, isMobileDevice ? 200 : 150);
+                const index = activeTypewriterSounds.indexOf(audio);
+                if (index > -1) {
+                    activeTypewriterSounds.splice(index, 1);
+                }
+            }, soundDuration);
 
             audioIndex = (audioIndex + 1) % AUDIO_POOL_SIZE;
-        } catch {}
+
+            return audio;
+        } catch (e) {
+            console.error("Error in typewriter sound:", e);
+            return null;
+        }
     }
 
     function typeMessage(message, callback) {
         charIndex = 0;
+
         stopAllTypewriterSounds();
 
         function type() {
             if (charIndex < message.length) {
                 playTypewriterSound();
+
                 typingText.textContent = message.slice(0, charIndex + 1);
                 charIndex++;
 
@@ -417,7 +451,7 @@ const GlitchText = {
     function deleteMessage(callback) {
         stopAllTypewriterSounds();
 
-        function erase() {
+        function deleteChar() {
             if (charIndex > 0) {
                 typingText.textContent = typingText.textContent.slice(0, charIndex - 1);
                 charIndex--;
@@ -426,26 +460,29 @@ const GlitchText = {
                     ? Math.floor(Math.random() * 70) + 40
                     : Math.floor(Math.random() * 50) + 30;
 
-                setTimeout(erase, randomDelay);
-            } else if (callback) callback();
+                setTimeout(deleteChar, randomDelay);
+            } else if (callback) {
+                callback();
+            }
         }
 
-        erase();
+        deleteChar();
     }
 
     function showSecondMessage() {
         typeMessage(messages[1], () => {
             typingText.classList.add("blink");
+
             messageSequenceComplete = true;
+
             setTimeout(startMatrixExperience, 1000);
         });
     }
 
-
-    // ===== MATRIX EXPERIENCE START =====
     function startMatrixExperience() {
         const matrixContainer = document.getElementById("matrixContainer");
         const overlayText = document.getElementById("overlayText");
+        const developerCredit = document.getElementById("developerCredit");
 
         typingText.classList.add("hidden");
         matrixContainer.classList.remove("hidden");
@@ -454,75 +491,78 @@ const GlitchText = {
         const matrix = new MatrixRain('matrixContainer');
 
         setTimeout(() => {
-            if (typeof GlitchText !== "undefined") {
+            if (typeof GlitchText !== 'undefined') {
                 GlitchText.init(overlayText);
             }
         }, 100);
 
         if (audioInitialized && messageSequenceComplete && matrixAudio) {
-            matrixAudio.play().catch(() => {});
+            console.log("Playing Matrix soundtrack");
+
+            if (isMobileDevice) {
+                matrixAudio.currentTime = 0;
+            }
+
+            matrixAudio.play().catch(error => {
+                console.error("Error playing Matrix soundtrack:", error);
+            });
         }
 
-        // --- SHOW ENTER BUTTON ---
         setTimeout(() => {
-            const enterContainer = document.getElementById("enterContainer");
-            enterContainer.classList.remove("hidden");
-            enterContainer.style.opacity = "0";
+            const developerCreditEl = document.getElementById("developerCredit");
+            developerCreditEl.classList.remove("hidden");
+            developerCreditEl.style.opacity = "0";
+            developerCreditEl.style.zIndex = "1000";
             requestAnimationFrame(() => {
-                enterContainer.style.transition = "opacity 1s ease-in-out";
-                enterContainer.style.opacity = "1";
+                developerCreditEl.style.opacity = "1";
             });
         }, 1500);
 
-        // --- SHOW INFO CONTAINER (ICONS + CREDIT) ---
         setTimeout(() => {
-            const infoContainer = document.getElementById("infoContainer");
-            infoContainer.classList.remove("hidden");
-            infoContainer.style.opacity = "0";
+            const socialLinks = document.getElementById("socialLinks");
+            socialLinks.classList.remove("hidden");
+            socialLinks.style.opacity = "0";
+            socialLinks.style.zIndex = "1000";
             requestAnimationFrame(() => {
-                infoContainer.style.transition = "opacity 1s ease-in-out";
-                infoContainer.style.opacity = "1";
+                socialLinks.style.opacity = "1";
             });
         }, 2000);
     }
 
-
-    // ===== MATRIX RAIN CLASS =====
     class MatrixRain {
         constructor(containerId, fontSize = 16) {
             this.container = document.getElementById(containerId);
             this.fontSize = fontSize;
-            this.characters =
-                "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789@#$%^&*";
+            this.characters = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789@#$%^&*";
             this.columns = [];
             this.drops = [];
 
-            this.container.style.overflow = "hidden";
-            this.container.style.position = "fixed";
-            this.container.style.top = "0";
-            this.container.style.left = "0";
-            this.container.style.width = "100%";
-            this.container.style.height = "100%";
+            this.container.style.overflow = 'hidden';
+            this.container.style.position = 'fixed';
+            this.container.style.top = '0';
+            this.container.style.left = '0';
+            this.container.style.width = '100%';
+            this.container.style.height = '100%';
 
             this.init();
             this.animate();
         }
 
         init() {
-            this.canvas = document.createElement("canvas");
-            this.ctx = this.canvas.getContext("2d");
+            this.canvas = document.createElement('canvas');
+            this.ctx = this.canvas.getContext('2d');
             this.container.appendChild(this.canvas);
 
-            this.canvas.style.pointerEvents = "none";
-            this.canvas.style.position = "fixed";
-            this.canvas.style.top = "0";
-            this.canvas.style.left = "0";
-            this.canvas.style.zIndex = "1";
-            this.canvas.style.width = "100%";
-            this.canvas.style.height = "100%";
+            this.canvas.style.pointerEvents = 'none';
+            this.canvas.style.position = 'fixed';
+            this.canvas.style.top = '0';
+            this.canvas.style.left = '0';
+            this.canvas.style.zIndex = '1';
+            this.canvas.style.width = '100%';
+            this.canvas.style.height = '100%';
 
             this.resize();
-            window.addEventListener("resize", () => this.resize());
+            window.addEventListener('resize', () => this.resize());
             this.initDrops();
         }
 
@@ -542,6 +582,7 @@ const GlitchText = {
             this.ctx.font = `${this.fontSize}px monospace`;
 
             this.initDrops();
+
             isMobileDevice = window.innerWidth <= 768;
         }
 
@@ -553,15 +594,14 @@ const GlitchText = {
         }
 
         animate() {
-            this.ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-            this.ctx.fillStyle = "#0F0";
+            this.ctx.fillStyle = '#0F0';
 
             for (let i = 0; i < this.drops.length; i++) {
-                const char =
-                    this.characters[Math.floor(Math.random() * this.characters.length)];
-                const x = i * this.fontSize - 1;
+                const char = this.characters[Math.floor(Math.random() * this.characters.length)];
+                const x = (i * this.fontSize) - 1;
                 const y = this.drops[i] * this.fontSize;
 
                 this.ctx.fillText(char, x, y);
@@ -579,21 +619,23 @@ const GlitchText = {
         }
     }
 
-
-    // ===== GLOBAL EVENTS =====
-    window.addEventListener("resize", () => {
-        if (GlitchText.isRunning) {
+    window.addEventListener('resize', () => {
+        if (typeof GlitchText !== 'undefined' && GlitchText.isRunning) {
             const overlayText = document.getElementById("overlayText");
-            while (overlayText.firstChild) overlayText.removeChild(overlayText.firstChild);
+            while (overlayText.firstChild) {
+                overlayText.removeChild(overlayText.firstChild);
+            }
             GlitchText.init(overlayText);
         }
     });
 
-    document.addEventListener("visibilitychange", () => {
-        if (document.hidden) stopAllTypewriterSounds();
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            stopAllTypewriterSounds();
+        }
     });
 
-    window.addEventListener("orientationchange", () => {
+    window.addEventListener('orientationchange', () => {
         setTimeout(() => {
             isMobileDevice = window.innerWidth <= 768;
         }, 200);
