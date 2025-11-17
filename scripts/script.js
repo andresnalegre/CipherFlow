@@ -141,7 +141,6 @@ const GlitchText = {
         }
     }
 
-
     // ===== OPENING VIDEO =====
     let openingVideoContainer = null;
     let openingVideo = null;
@@ -250,7 +249,6 @@ const GlitchText = {
 
     createOpeningVideo();
 
-
     // ===== TYPEWRITER AUDIO =====
     const typewriterAudioPool = [];
     const AUDIO_POOL_SIZE = 3;
@@ -282,6 +280,7 @@ const GlitchText = {
 
     typingText.style.opacity = '0';
 
+    // ===== AUDIO INIT (apenas trilha Matrix, sem typewriter) =====
     function initializeAudio() {
         if (!audioInitialized) {
             initMatrixAudio();
@@ -289,12 +288,14 @@ const GlitchText = {
             const promises = [];
 
             if (matrixAudio) {
-                promises.push(matrixAudio.play().then(() => matrixAudio.pause()));
+                promises.push(
+                    matrixAudio.play()
+                        .then(() => {
+                            matrixAudio.pause();
+                            matrixAudio.currentTime = 0;
+                        })
+                );
             }
-
-            typewriterAudioPool.forEach(audio => {
-                promises.push(audio.play().then(() => audio.pause()));
-            });
 
             Promise.all(promises)
                 .then(() => {
@@ -326,7 +327,6 @@ const GlitchText = {
             }
         }, 600);
     }
-
 
     // ===== TYPEWRITER LOGIC =====
     function startSequence() {
@@ -436,7 +436,6 @@ const GlitchText = {
         });
     }
 
-
     // ===== MATRIX EXPERIENCE START =====
     function startMatrixExperience() {
         const matrixContainer = document.getElementById("matrixContainer");
@@ -480,7 +479,6 @@ const GlitchText = {
             });
         }, 2000);
     }
-
 
     // ===== MATRIX RAIN CLASS =====
     class MatrixRain {
@@ -573,7 +571,6 @@ const GlitchText = {
             }, 33);
         }
     }
-
 
     // ===== GLOBAL EVENTS =====
     window.addEventListener("resize", () => {
