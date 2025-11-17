@@ -125,7 +125,11 @@ const GlitchText = {
 };
 
 (() => {
-    const messages = ["Wake up, Neo...", "The Matrix has you..."];
+    const messages = [
+    "Hello… I’ve been waiting for this moment.",
+    "Your story is about to change.",
+    "Nothing will be the same after this."
+    ];
     const typingText = document.getElementById("typingText");
 
     // ===== MATRIX AUDIO VIA JS =====
