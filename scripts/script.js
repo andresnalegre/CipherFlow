@@ -126,12 +126,7 @@ const GlitchText = {
 
 (() => {
 
-    const messages = [
-        "I’ve been waiting for you.",
-        "Your story is about to change.",
-        "Nothing will be the same after this."
-    ];
-
+    const messages = ["I’ve been waiting for you...", "let your curiosity guide you..."];
     const typingText = document.getElementById("typingText");
 
     // ===== MATRIX AUDIO =====
