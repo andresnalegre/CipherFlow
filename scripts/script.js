@@ -127,7 +127,7 @@ const GlitchText = {
 (() => {
 
     const messages = [
-        "Hello… I’ve been waiting for this moment.",
+        "I’ve been waiting for you.",
         "Your story is about to change.",
         "Nothing will be the same after this."
     ];
