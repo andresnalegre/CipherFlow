@@ -282,33 +282,59 @@ const GlitchText = {
 
     // ===== AUDIO INIT (apenas trilha Matrix, sem typewriter) =====
     function initializeAudio() {
-        if (!audioInitialized) {
-            initMatrixAudio();
+        if (audioInitialized) return;
 
-            const promises = [];
+        initMatrixAudio();
 
-            if (matrixAudio) {
-                promises.push(
-                    matrixAudio.play()
-                        .then(() => {
-                            matrixAudio.pause();
-                            matrixAudio.currentTime = 0;
-                        })
-                );
-            }
+        const promises = [];
 
-            Promise.all(promises)
-                .then(() => {
-                    audioInitialized = true;
-                })
-                .catch(() => {
-                    document.addEventListener(
-                        'click',
-                        () => !audioInitialized && initializeAudio(),
-                        { once: true }
-                    );
-                });
+        // Desbloqueia a trilha do Matrix em MUDO
+        if (matrixAudio) {
+            const prevMuted = matrixAudio.muted;
+            matrixAudio.muted = true;
+
+            promises.push(
+                matrixAudio.play()
+                    .then(() => {
+                        matrixAudio.pause();
+                        matrixAudio.currentTime = 0;
+                        matrixAudio.muted = prevMuted;
+                    })
+                    .catch(() => {
+                        matrixAudio.muted = prevMuted;
+                    })
+            );
         }
+
+        // Desbloqueia o pool de typewriter também, mas em mudo
+        typewriterAudioPool.forEach(audio => {
+            const prevMuted = audio.muted;
+            audio.muted = true;
+
+            promises.push(
+                audio.play()
+                    .then(() => {
+                        audio.pause();
+                        audio.currentTime = 0;
+                        audio.muted = prevMuted;
+                    })
+                    .catch(() => {
+                        audio.muted = prevMuted;
+                    })
+            );
+        });
+
+        Promise.all(promises)
+            .then(() => {
+                audioInitialized = true;
+            })
+            .catch(() => {
+                document.addEventListener(
+                    'click',
+                    () => !audioInitialized && initializeAudio(),
+                    { once: true }
+                );
+            });
     }
 
     blackOverlay.addEventListener('click', handleInitialClick);
