@@ -39,8 +39,8 @@ const GlitchText = {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
-        const staticText = "ENTER THE ";
-        const targetText = "MATRIX";
+        const staticText = "FOLLOW THE ";
+        const targetText = "RABBIT";
 
         const textMetricsStatic = ctx.measureText(staticText);
         const textMetricsTarget = ctx.measureText(targetText);
