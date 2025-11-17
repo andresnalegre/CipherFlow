@@ -126,10 +126,10 @@ const GlitchText = {
 
 (() => {
 
+    // WHITE RABBIT: Intro, áudio e vídeo
     const messages = ["I’ve been waiting for you...", "let your curiosity guide you..."];
     const typingText = document.getElementById("typingText");
 
-    // ===== MATRIX AUDIO =====
     let matrixAudio = null;
 
     function initMatrixAudio() {
@@ -141,7 +141,6 @@ const GlitchText = {
         }
     }
 
-    // ===== OPENING VIDEO =====
     let openingVideoContainer = null;
     let openingVideo = null;
     let openingVideoPlayed = false;
@@ -249,7 +248,6 @@ const GlitchText = {
 
     createOpeningVideo();
 
-    // ===== TYPEWRITER AUDIO =====
     const typewriterAudioPool = [];
     const AUDIO_POOL_SIZE = 3;
 
@@ -280,7 +278,6 @@ const GlitchText = {
 
     typingText.style.opacity = '0';
 
-    // ===== AUDIO INIT (apenas trilha Matrix, sem typewriter) =====
     function initializeAudio() {
         if (audioInitialized) return;
 
@@ -288,7 +285,6 @@ const GlitchText = {
 
         const promises = [];
 
-        // Desbloqueia a trilha do Matrix em MUDO
         if (matrixAudio) {
             const prevMuted = matrixAudio.muted;
             matrixAudio.muted = true;
@@ -306,7 +302,6 @@ const GlitchText = {
             );
         }
 
-        // Desbloqueia o pool de typewriter também, mas em mudo
         typewriterAudioPool.forEach(audio => {
             const prevMuted = audio.muted;
             audio.muted = true;
@@ -354,7 +349,7 @@ const GlitchText = {
         }, 600);
     }
 
-    // ===== TYPEWRITER LOGIC =====
+    // WHITE RABBIT: Typewriter e sequência de mensagens
     function startSequence() {
         typeMessage(messages[0], () => {
             document.addEventListener("click", handleFirstClick);
@@ -462,7 +457,7 @@ const GlitchText = {
         });
     }
 
-    // ===== MATRIX EXPERIENCE START =====
+    // WHITE RABBIT: Início da experiência Matrix
     function startMatrixExperience() {
         const matrixContainer = document.getElementById("matrixContainer");
         const overlayText = document.getElementById("overlayText");
@@ -494,8 +489,7 @@ const GlitchText = {
         }, 2000);
     }
 
-
-    // ===== MATRIX RAIN CLASS =====
+    // WHITE RABBIT: Matrix rain
     class MatrixRain {
         constructor(containerId, fontSize = 16) {
             this.container = document.getElementById(containerId);
@@ -587,7 +581,7 @@ const GlitchText = {
         }
     }
 
-    // ===== GLOBAL EVENTS =====
+    // WHITE RABBIT: Eventos globais
     window.addEventListener("resize", () => {
         if (GlitchText.isRunning) {
             const overlayText = document.getElementById("overlayText");
