@@ -104,7 +104,7 @@ body {
 
 .social-icons {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.6rem;
   align-items: center;
   justify-content: center;
 }
@@ -112,15 +112,15 @@ body {
 /* base para todos (tamanho, borda, sombra) */
 .social-icons a,
 #rabbitButton {
-  width: 55px;
-  height: 55px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 /* fundo de cada ícone */
@@ -144,14 +144,14 @@ body {
 /* hover geral */
 .social-icons a:hover,
 #rabbitButton:hover {
-  box-shadow: 0 0 25px rgba(0, 255, 0, 0.9);
-  transform: scale(1.12);
+  box-shadow: 0 0 18px rgba(0, 255, 0, 0.9);
+  transform: scale(1.08);
 }
 
 /* tamanho dos SVGs */
 .social-icon {
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
 }
 
 /* =============================== */
@@ -159,14 +159,13 @@ body {
 /* =============================== */
 
 #rabbitButton img {
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
   object-fit: cover;
   border-radius: 50%;
-  filter: drop-shadow(0 0 6px #00ff00);
+  filter: drop-shadow(0 0 4px #00ff00);
   pointer-events: none;
 }
-
 
 /* =============================== */
 /*     INFO CONTAINER (BOTTOM)     */
