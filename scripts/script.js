@@ -483,18 +483,6 @@ const GlitchText = {
             matrixAudio.play().catch(() => {});
         }
 
-        // --- SHOW ENTER BUTTON ---
-        setTimeout(() => {
-            const enterContainer = document.getElementById("enterContainer");
-            enterContainer.classList.remove("hidden");
-            enterContainer.style.opacity = "0";
-            requestAnimationFrame(() => {
-                enterContainer.style.transition = "opacity 1s ease-in-out";
-                enterContainer.style.opacity = "1";
-            });
-        }, 1500);
-
-        // --- SHOW INFO CONTAINER (ICONS + CREDIT) ---
         setTimeout(() => {
             const infoContainer = document.getElementById("infoContainer");
             infoContainer.classList.remove("hidden");
@@ -505,6 +493,7 @@ const GlitchText = {
             });
         }, 2000);
     }
+
 
     // ===== MATRIX RAIN CLASS =====
     class MatrixRain {
