@@ -110,24 +110,37 @@ body {
 }
 
 #enterButton {
-  padding: 0.75rem 2.5rem;
+  width: 90px; /* largura do botão pelo tamanho da imagem */
+  height: 90px; /* altura proporcional */
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
   border-radius: 999px;
   border: 1px solid rgba(0, 255, 0, 0.7);
-  background: rgba(0, 0, 0, 0.7);
-  color: #e5ffe5;
-  font-family: 'Courier New', monospace;
-  font-size: 1rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  background: rgba(0, 0, 0, 0.65);
+
   cursor: pointer;
-  box-shadow: 0 0 18px rgba(0, 255, 0, 0.7);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+
+  box-shadow: 0 0 18px rgba(0, 255, 0, 0.6);
+  transition: transform 0.25s ease, 
+              box-shadow 0.25s ease, 
+              background 0.25s ease;
+}
+
+#enterButton img {
+  width: 55px;
+  height: 55px;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 0 6px #00ff00); /* glow matrix */
 }
 
 #enterButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 25px rgba(0, 255, 0, 0.9);
-  background: rgba(0, 0, 0, 0.9);
+  transform: translateY(-3px) scale(1.05);
+  background: rgba(0, 0, 0, 0.85);
+  box-shadow: 0 0 30px rgba(0, 255, 0, 1);
 }
 
 /* =============================== */
