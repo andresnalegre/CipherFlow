@@ -109,6 +109,7 @@ body {
   justify-content: center;
 }
 
+/* base para todos (tamanho, borda, sombra) */
 .social-icons a,
 #rabbitButton {
   width: 55px;
@@ -117,18 +118,37 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.7);
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
   cursor: pointer;
   box-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
+/* fundo de cada ícone */
+.github-bg {
+  background-color: var(--github-bg);   /* branco */
+}
+
+.linkedin-bg {
+  background-color: var(--linkedin-bg); /* azul */
+}
+
+.codepen-bg {
+  background-color: var(--codepen-bg);  /* amarelo */
+}
+
+/* fundo do coelho em preto translúcido */
+#rabbitButton {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+/* hover geral */
 .social-icons a:hover,
 #rabbitButton:hover {
   box-shadow: 0 0 25px rgba(0, 255, 0, 0.9);
   transform: scale(1.12);
 }
 
+/* tamanho dos SVGs */
 .social-icon {
   width: 40px;
   height: 40px;
@@ -146,6 +166,7 @@ body {
   filter: drop-shadow(0 0 6px #00ff00);
   pointer-events: none;
 }
+
 
 /* =============================== */
 /*     INFO CONTAINER (BOTTOM)     */
