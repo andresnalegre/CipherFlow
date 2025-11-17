@@ -134,7 +134,7 @@ const GlitchText = {
 
     function initMatrixAudio() {
         if (!matrixAudio) {
-            matrixAudio = new Audio('./assets/audio/Matrix Soundtrack.mp3');
+            matrixAudio = new Audio('./assets/audio/Clubbed_to_Death.mp3');
             matrixAudio.loop = true;
             matrixAudio.preload = 'auto';
             matrixAudio.volume = 0.3;
@@ -162,7 +162,7 @@ const GlitchText = {
         openingVideoContainer.style.pointerEvents = 'auto';
 
         openingVideo = document.createElement('video');
-        openingVideo.src = './assets/video/opening.mp4';
+        openingVideo.src = './assets/video/Intro.mp4';
         openingVideo.autoplay = false;
         openingVideo.playsInline = true;
         openingVideo.preload = 'auto';
@@ -260,7 +260,7 @@ const GlitchText = {
     const AUDIO_POOL_SIZE = 3;
 
     for (let i = 0; i < AUDIO_POOL_SIZE; i++) {
-        const audio = new Audio('./assets/audio/TypeWriter.mp3');
+        const audio = new Audio('./assets/audio/Type.mp3');
         audio.volume = 0.4;
         typewriterAudioPool.push(audio);
     }
