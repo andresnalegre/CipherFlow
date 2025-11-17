@@ -1,3 +1,4 @@
+/* Glitch Effect */
 const GlitchText = {
     chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()",
     isRunning: false,
@@ -124,8 +125,8 @@ const GlitchText = {
     }
 };
 
+/* Main Intro & Matrix Flow */
 (() => {
-
     const messages = ["I’ve been waiting for you...", "let your curiosity guide you..."];
     const typingText = document.getElementById("typingText");
 
@@ -134,7 +135,7 @@ const GlitchText = {
 
     function initMatrixAudio() {
         if (!matrixAudio) {
-            matrixAudio = new Audio('./assets/audio/Clubbed_to_Death.mp3');
+            matrixAudio = new Audio('./assets/audio/Matrix Soundtrack.mp3');
             matrixAudio.loop = true;
             matrixAudio.preload = 'auto';
             matrixAudio.volume = 0.3;
@@ -162,7 +163,7 @@ const GlitchText = {
         openingVideoContainer.style.pointerEvents = 'auto';
 
         openingVideo = document.createElement('video');
-        openingVideo.src = './assets/video/Intro.mp4';
+        openingVideo.src = './assets/video/opening.mp4';
         openingVideo.autoplay = false;
         openingVideo.playsInline = true;
         openingVideo.preload = 'auto';
@@ -260,7 +261,7 @@ const GlitchText = {
     const AUDIO_POOL_SIZE = 3;
 
     for (let i = 0; i < AUDIO_POOL_SIZE; i++) {
-        const audio = new Audio('./assets/audio/Type.mp3');
+        const audio = new Audio('./assets/audio/TypeWriter.mp3');
         audio.volume = 0.4;
         typewriterAudioPool.push(audio);
     }
@@ -286,6 +287,7 @@ const GlitchText = {
 
     typingText.style.opacity = '0';
 
+    /* Audio init */
     function initializeAudio() {
         if (audioInitialized) return;
 
@@ -352,6 +354,7 @@ const GlitchText = {
         }, 600);
     }
 
+    /* Message Sequence */
     function startSequence() {
         typeMessage(messages[0], () => {
             document.addEventListener("click", handleFirstClick);
@@ -378,6 +381,7 @@ const GlitchText = {
         }
     }
 
+    /* Sound Control */
     function stopAllTypewriterSounds() {
         activeTypewriterSounds.forEach(audio => {
             try {
@@ -408,6 +412,7 @@ const GlitchText = {
         } catch {}
     }
 
+    /* Typing & Deleting Text */
     function typeMessage(message, callback) {
         charIndex = 0;
         stopAllTypewriterSounds();
@@ -459,6 +464,7 @@ const GlitchText = {
         });
     }
 
+    /* Matrix Canva */
     function startMatrixExperience() {
         const matrixContainer = document.getElementById("matrixContainer");
         const overlayText = document.getElementById("overlayText");
@@ -490,6 +496,7 @@ const GlitchText = {
         }, 2000);
     }
 
+    /* Matrix Rain */
     class MatrixRain {
         constructor(containerId, fontSize = 16) {
             this.container = document.getElementById(containerId);
