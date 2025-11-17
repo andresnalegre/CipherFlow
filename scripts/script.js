@@ -126,11 +126,11 @@ const GlitchText = {
 
 (() => {
 
-    // contact intro
     const messages = ["I’ve been waiting for you...", "let your curiosity guide you..."];
     const typingText = document.getElementById("typingText");
 
     let matrixAudio = null;
+    let canStartAudio = false;
 
     function initMatrixAudio() {
         if (!matrixAudio) {
@@ -206,6 +206,8 @@ const GlitchText = {
 
     function playOpeningVideo() {
         if (openingVideoPlayed) {
+            canStartAudio = true;
+            initializeAudio();
             startIntroAfterVideo();
             return;
         }
@@ -223,6 +225,8 @@ const GlitchText = {
                 .then(() => {})
                 .catch(err => {
                     console.error('Error playing opening video:', err);
+                    canStartAudio = true;
+                    initializeAudio();
                     removeOpeningVideo();
                     startIntroAfterVideo();
                 });
@@ -230,11 +234,15 @@ const GlitchText = {
 
         openingVideo.onended = () => {
             openingVideoPlayed = true;
+            canStartAudio = true;
+            initializeAudio();
             removeOpeningVideoWithFade();
         };
 
         openingVideo.onerror = () => {
             console.error('Error loading opening video');
+            canStartAudio = true;
+            initializeAudio();
             removeOpeningVideo();
             startIntroAfterVideo();
         };
@@ -324,11 +332,7 @@ const GlitchText = {
                 audioInitialized = true;
             })
             .catch(() => {
-                document.addEventListener(
-                    'click',
-                    () => !audioInitialized && initializeAudio(),
-                    { once: true }
-                );
+                audioInitialized = true;
             });
     }
 
@@ -336,7 +340,6 @@ const GlitchText = {
     blackOverlay.addEventListener('touchstart', handleInitialClick);
 
     function handleInitialClick() {
-        initializeAudio();
         playOpeningVideo();
 
         blackOverlay.style.transition = 'opacity 0.6s';
@@ -349,7 +352,6 @@ const GlitchText = {
         }, 600);
     }
 
-    // Type sequence
     function startSequence() {
         typeMessage(messages[0], () => {
             document.addEventListener("click", handleFirstClick);
@@ -387,7 +389,7 @@ const GlitchText = {
     }
 
     function playTypewriterSound() {
-        if (!audioInitialized) return null;
+        if (!audioInitialized || !canStartAudio) return null;
 
         try {
             const audio = typewriterAudioPool[audioIndex];
@@ -457,7 +459,6 @@ const GlitchText = {
         });
     }
 
-    // init(white rabbit)
     function startMatrixExperience() {
         const matrixContainer = document.getElementById("matrixContainer");
         const overlayText = document.getElementById("overlayText");
@@ -474,7 +475,7 @@ const GlitchText = {
             }
         }, 100);
 
-        if (audioInitialized && messageSequenceComplete && matrixAudio) {
+        if (audioInitialized && messageSequenceComplete && matrixAudio && canStartAudio) {
             matrixAudio.play().catch(() => {});
         }
 
@@ -489,7 +490,6 @@ const GlitchText = {
         }, 2000);
     }
 
-    // Matrix rain
     class MatrixRain {
         constructor(containerId, fontSize = 16) {
             this.container = document.getElementById(containerId);
