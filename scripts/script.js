@@ -126,7 +126,7 @@ const GlitchText = {
 
 (() => {
 
-    // WHITE RABBIT: Intro, áudio e vídeo
+    // contact intro
     const messages = ["I’ve been waiting for you...", "let your curiosity guide you..."];
     const typingText = document.getElementById("typingText");
 
@@ -349,7 +349,7 @@ const GlitchText = {
         }, 600);
     }
 
-    // WHITE RABBIT: Typewriter e sequência de mensagens
+    // Type sequence
     function startSequence() {
         typeMessage(messages[0], () => {
             document.addEventListener("click", handleFirstClick);
@@ -457,7 +457,7 @@ const GlitchText = {
         });
     }
 
-    // WHITE RABBIT: Início da experiência Matrix
+    // init(white rabbit)
     function startMatrixExperience() {
         const matrixContainer = document.getElementById("matrixContainer");
         const overlayText = document.getElementById("overlayText");
@@ -489,7 +489,7 @@ const GlitchText = {
         }, 2000);
     }
 
-    // WHITE RABBIT: Matrix rain
+    // Matrix rain
     class MatrixRain {
         constructor(containerId, fontSize = 16) {
             this.container = document.getElementById(containerId);
@@ -581,7 +581,6 @@ const GlitchText = {
         }
     }
 
-    // WHITE RABBIT: Eventos globais
     window.addEventListener("resize", () => {
         if (GlitchText.isRunning) {
             const overlayText = document.getElementById("overlayText");
