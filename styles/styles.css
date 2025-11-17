@@ -126,15 +126,15 @@ body {
 
 /* fundo de cada ícone */
 .github-bg {
-  background-color: var(--github-bg);   /* branco */
+  background-color: var(--github-bg);
 }
 
 .linkedin-bg {
-  background-color: var(--linkedin-bg); /* azul */
+  background-color: var(--linkedin-bg);
 }
 
 .codepen-bg {
-  background-color: var(--codepen-bg);  /* amarelo */
+  background-color: var(--codepen-bg);
 }
 
 /* fundo do coelho em preto translúcido */
@@ -168,7 +168,6 @@ body {
   pointer-events: none;
 }
 
-
 /* =============================== */
 /*     INFO CONTAINER (BOTTOM)     */
 /* =============================== */
@@ -189,7 +188,7 @@ body {
 }
 
 /* =============================== */
-/*        DEVELOPER CREDIT        */
+/*        DEVELOPER CREDIT         */
 /* =============================== */
 
 #developerCredit {
@@ -259,7 +258,7 @@ body {
 }
 
 /* =============================== */
-/*           RESPONSIVE            */
+/*           RESPONSIVE BASE       */
 /* =============================== */
 
 @media (max-width: 768px) {
@@ -277,5 +276,140 @@ body {
 
   .social-icons {
     justify-content: center;
+  }
+}
+
+/* =============================== */
+/*      RESPONSIVE DETALHADO       */
+/* =============================== */
+
+@media screen and (max-width: 320px) {
+  #typingText {
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    top: -10%;
+  }
+
+  #overlayText {
+    font-size: 1.2rem;
+    top: 40%;
+  }
+
+  .social-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .social-icons {
+    gap: 12px;
+    top: 44%;
+  }
+
+  .audio-toggle {
+    padding: 8px;
+  }
+}
+
+@media screen and (min-width: 321px) and (max-width: 480px) {
+  #typingText {
+    font-size: 1.1rem;
+    top: -10%;
+  }
+
+  #overlayText {
+    font-size: 1.5rem;
+    top: 42%;
+  }
+
+  .social-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .social-icons {
+    gap: 15px;
+    top: 46%;
+  }
+}
+
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  #typingText {
+    font-size: 1.3rem;
+    top: -10%;
+  }
+
+  #overlayText {
+    font-size: 2rem;
+    top: 45%;
+  }
+
+  .social-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .social-icons {
+    top: 50%;
+  }
+}
+
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  #typingText {
+    font-size: 1.4rem;
+  }
+
+  #overlayText {
+    font-size: 2.8rem;
+  }
+
+  .social-icons {
+    top: 55%;
+    gap: 0px;
+  }
+}
+
+@media screen and (min-width: 1025px) and (max-width: 1919px) {
+  #typingText {
+    font-size: 1.4rem;
+  }
+
+  #overlayText {
+    font-size: 2.8rem;
+  }
+
+  .social-icons {
+    top: 60%;
+  }
+}
+
+@media screen and (max-height: 480px) and (orientation: landscape) {
+  .social-icons {
+    top: 65%;
+  }
+
+  #typingText {
+    font-size: 1.1rem;
+    top: -20%;
+  }
+
+  #overlayText {
+    font-size: 1.4rem;
+    top: 35%;
+  }
+}
+
+@media screen and (min-width: 1920px) {
+  #typingText {
+    font-size: 1.8rem;
+    top: -35%;
+  }
+
+  #overlayText {
+    font-size: 3.5rem;
+  }
+
+  .social-icon {
+    width: 42px;
+    height: 42px;
   }
 }
