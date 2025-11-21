@@ -40,7 +40,7 @@ const GlitchText = {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
-        const staticText = "FOLLOW THE ";
+        const staticText = "FOLLOW THE WHITE ";
         const targetText = "RABBIT";
 
         const textMetricsStatic = ctx.measureText(staticText);
